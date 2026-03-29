@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Claude Code Usage Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background-color: transparent;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .settings-header__title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .settings-section {
+            margin-bottom: 2rem;
+        }
+
+        .settings-section__title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+
+        .price-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-group input {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn--primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn--primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn--secondary {
+            background-color: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .btn--secondary:hover {
+            background-color: var(--text-secondary);
+            color: white;
+        }
+
+        .price-list {
+            margin-top: 1.5rem;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: var(--table-row-alt);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+        }
+
+        .price-item__name {
+            font-weight: 500;
+        }
+
+        .price-item__value {
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .settings-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .back-btn {
+                align-self: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="settings-header">
+            <a href="index.html" class="back-btn" aria-label="Back to dashboard">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            <h1 class="settings-header__title">Settings</h1>
+        </header>
+
+        <!-- Price Configuration Section -->
+        <section class="card settings-section">
+            <h2 class="settings-section__title">Model Pricing</h2>
+            <p class="settings-section__description" style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.875rem;">
+                Configure the price per million tokens for each model. This is used to calculate cost estimates.
+            </p>
+
+            <form class="price-form" id="price-form">
+                <div class="form-group">
+                    <label for="model-name">Model Name</label>
+                    <input type="text" id="model-name" name="model-name" placeholder="e.g., claude-3-opus" required>
+                </div>
+                <div class="form-group">
+                    <label for="input-price">Input Price (per 1M tokens)</label>
+                    <input type="number" id="input-price" name="input-price" placeholder="e.g., 15.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="output-price">Output Price (per 1M tokens)</label>
+                    <input type="number" id="output-price" name="output-price" placeholder="e.g., 75.00" step="0.01" min="0" required>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn btn--primary">Add Price</button>
+                    <button type="button" class="btn btn--secondary" id="reset-btn">Reset</button>
+                </div>
+            </form>
+
+            <!-- Price List (populated by JavaScript) -->
+            <div class="price-list" id="price-list">
+                <!-- Price items will be added here -->
+            </div>
+        </section>
+
+        <!-- Info Section -->
+        <section class="card settings-section">
+            <h2 class="settings-section__title">About</h2>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                Claude Code Usage Tracker helps you monitor your token usage and estimate costs across different projects and models.
+            </p>
+        </section>
+    </div>
+
+    <script>
+        // Placeholder for settings logic (will be implemented in Task 8)
+        document.getElementById('price-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Price configuration will be saved in Task 8');
+        });
+    </script>
+</body>
+</html>
