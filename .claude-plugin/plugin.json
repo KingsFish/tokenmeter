@@ -1,9 +1,9 @@
 {
-  "name": "usage-tracker",
-  "description": "Track Claude Code token usage across sessions with CLI and Web Dashboard",
+  "name": "tokenmeter",
+  "description": "Measure your Claude Code token usage with CLI stats and Web Dashboard",
   "version": "1.0.0",
   "author": {
     "name": "zhiquan"
   },
-  "keywords": ["usage", "tokens", "cost", "tracking", "dashboard"]
+  "keywords": ["tokens", "usage", "cost", "tracking", "dashboard", "meter"]
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Dashboard HTTP Server for usage-tracker plugin.
+Dashboard HTTP Server for tokenmeter plugin.
 
 Serves static files and provides API endpoints for usage data and price configuration.
 """
@@ -22,7 +22,7 @@ SCRIPTS_DIR = Path(__file__).parent
 PROJECT_ROOT = Path(__file__).parent.parent
 
 # Price config locations
-PRICE_CONFIG_USER = Path.home() / ".claude" / "usage-tracker" / "prices.json"
+PRICE_CONFIG_USER = Path.home() / ".claude" / "tokenmeter" / "prices.json"
 PRICE_CONFIG_LOCAL = PROJECT_ROOT / "config" / "prices.json"
 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# start-dashboard.sh - Start the usage-tracker dashboard server
+# start-dashboard.sh - Start the tokenmeter dashboard server
 #
 # Usage:
 #   ./start-dashboard.sh [port]
@@ -56,5 +56,5 @@ if [[ ! -d "${PROJECT_ROOT}/dashboard" ]]; then
 fi
 
 # Start the server
-echo "Starting usage-tracker dashboard on port ${PORT}..."
+echo "Starting tokenmeter dashboard on port ${PORT}..."
 exec python3 "${SCRIPT_DIR}/dashboard-server.py"

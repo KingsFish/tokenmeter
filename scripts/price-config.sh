@@ -18,7 +18,7 @@ set -euo pipefail
 # Configuration paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-PRICE_CONFIG_USER="${HOME}/.claude/usage-tracker/prices.json"
+PRICE_CONFIG_USER="${HOME}/.claude/tokenmeter/prices.json"
 PRICE_CONFIG_LOCAL="${PROJECT_ROOT}/config/prices.json"
 
 # Colors for output

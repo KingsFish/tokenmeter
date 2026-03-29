@@ -1,10 +1,10 @@
-# Usage Tracker Plugin for Claude Code
+# TokenMeter - Claude Code Token Usage Plugin
 
-A Claude Code plugin that tracks token usage across sessions with a CLI summary command and an interactive web dashboard.
+A Claude Code plugin that measures your token usage with a CLI summary command and an interactive web dashboard.
 
 ## Description
 
-Usage Tracker helps you monitor your Claude Code token consumption and estimate costs. It parses Claude Code transcript files stored in `~/.claude/projects` and provides:
+TokenMeter helps you monitor your Claude Code token consumption and estimate costs. It parses Claude Code transcript files stored in `~/.claude/projects` and provides:
 
 - **CLI Summary**: Quick terminal overview of your usage statistics
 - **Web Dashboard**: Interactive charts and detailed session history
@@ -39,7 +39,7 @@ Usage Tracker helps you monitor your Claude Code token consumption and estimate 
 
 2. Install the plugin with Claude Code:
    ```bash
-   claude plugin install /path/to/usage-tracker
+   claude plugin install /path/to/tokenmeter
    ```
 
 3. Verify installation:
@@ -199,7 +199,7 @@ Prices are specified in **USD per million tokens**:
 
 Prices are loaded from (in order of preference):
 
-1. **User config**: `~/.claude/usage-tracker/prices.json`
+1. **User config**: `~/.claude/tokenmeter/prices.json`
 2. **Plugin defaults**: `config/prices.json` in the plugin directory
 
 ### Adding New Models
