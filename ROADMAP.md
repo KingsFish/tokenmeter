@@ -160,9 +160,75 @@ Use `frontend-dev` skill to modernize and enhance the Web Dashboard:
 
 ---
 
+### 5. Data Loading Performance & Loading UI
+
+**Priority: Medium**
+
+Optimize data loading performance and improve loading state UX.
+
+**Performance Optimizations:**
+
+1. **API Response Optimization**
+   - Add pagination for sessions API (`?page=1&limit=20`)
+   - Add server-side filtering to reduce payload size
+   - Implement data compression (gzip)
+   - Cache parsed results on server
+
+2. **Frontend Optimizations**
+   - Lazy load chart data (load summary first, charts on-demand)
+   - Implement virtual scrolling for sessions table
+   - Use Web Workers for heavy data processing
+   - Add request debouncing for filters
+
+3. **Caching Strategy**
+   - LocalStorage cache for recent data (5-minute TTL)
+   - ETag-based conditional requests
+   - Background refresh without blocking UI
+
+**Loading UI Improvements:**
+
+1. **Skeleton Screens**
+   ```
+   ┌─────────────────────────────────┐
+   │ ████████████                    │  <- Title skeleton
+   │ ████████                        │  <- Value skeleton
+   └─────────────────────────────────┘
+   ```
+
+2. **Progressive Loading**
+   - Show summary cards immediately (cached)
+   - Load charts incrementally with fade-in
+   - Display "Loading X of Y sessions..." for table
+
+3. **Shimmer Animation**
+   ```css
+   .skeleton {
+     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+     background-size: 200% 100%;
+     animation: shimmer 1.5s infinite;
+   }
+   ```
+
+4. **Optimistic Updates**
+   - Show expected result before API confirms
+   - Rollback on error with toast notification
+
+**Files to modify:**
+- `scripts/dashboard-server.py` - Add pagination, compression
+- `dashboard/app.js` - Add caching, progressive loading, skeletons
+- `dashboard/index.html` - Add skeleton markup
+- `dashboard/style.css` - Add shimmer animation styles
+
+**Metrics to track:**
+- Time to First Contentful Paint (FCP) < 500ms
+- Largest Contentful Paint (LCP) < 1.5s
+- Total Blocking Time (TBT) < 200ms
+
+---
+
 ## v1.4 - Easy Installation
 
-### 5. Plugin Marketplace Publishing
+### 6. Plugin Marketplace Publishing
 
 **Priority: High**
 
