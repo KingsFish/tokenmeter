@@ -36,9 +36,99 @@ Add filtering capabilities to both CLI and Web Dashboard:
 
 ---
 
-## v1.2 - UI Enhancement
+## v1.2 - Real-time Tracking
 
-### 2. Optimize Web UI with frontend-dev
+### 2. Real-time Token Updates via Hooks
+
+**Priority: High**
+
+Monitor Claude Code session start/end events and update token stats in real-time.
+
+**Implementation:**
+
+Use Claude Code hooks to track sessions:
+
+1. **SessionEnd Hook** - Fires when session ends
+   - Parse current session's token usage from transcript
+   - Append to usage data file
+   - No need to re-parse all transcripts
+
+2. **Stop Hook** - Fires after each response (optional)
+   - Update running token count
+   - Push to Dashboard via WebSocket (if open)
+
+**Hook Configuration** (`.claude-plugin/hooks.json`):
+```json
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session-end-hook.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Benefits:**
+- Instant updates when Dashboard is open
+- No need to re-parse all transcripts each time
+- Lower latency for stats display
+
+**Files to create/modify:**
+- `.claude-plugin/hooks.json` - Hook configuration
+- `scripts/session-end-hook.sh` - Hook script
+- `scripts/append-usage.sh` - Append session data
+- `dashboard/app.js` - Add WebSocket/SSE support for live updates
+
+**Challenges:**
+- Need to handle partial session data gracefully
+- Dashboard must be running to receive live updates
+- Fallback to full parse if hook data is missing
+
+---
+
+### 3. Settings Page Button Layout
+
+**Priority: Low**
+
+Move Save/Cancel buttons to top-right of Settings page for better UX.
+
+**Current layout:**
+```
+[Header]
+[Form content...]
+[Save] [Cancel]  <- buttons at bottom
+```
+
+**New layout:**
+```
+[Header]                    [Cancel] [Save]
+[Form content...]
+```
+
+**Implementation:**
+- Move buttons to header section
+- Use flexbox with `justify-content: space-between`
+- Keep sticky positioning on header
+- Add confirmation dialog on Cancel if there are unsaved changes
+
+**Files to modify:**
+- `dashboard/settings.html` - Restructure header
+- `dashboard/settings.js` - Add unsaved changes tracking
+- `dashboard/style.css` - Style top-right buttons
+
+---
+
+## v1.3 - UI Enhancement
+
+### 4. Optimize Web UI with frontend-dev
 
 **Priority: Medium**
 
@@ -70,11 +160,9 @@ Use `frontend-dev` skill to modernize and enhance the Web Dashboard:
 
 ---
 
-## Future Considerations
+## v1.4 - Easy Installation
 
-### v1.3 - Easy Installation
-
-### 3. Plugin Marketplace Publishing
+### 5. Plugin Marketplace Publishing
 
 **Priority: High**
 
@@ -135,7 +223,7 @@ Reference: See `~/.claude/plugins/known_marketplaces.json` for marketplace struc
 
 ---
 
-### v1.4+
+### v1.5+
 - Export data to CSV/JSON
 - Per-session detail view with message breakdown
 - Usage alerts/notifications
