@@ -99,7 +99,11 @@ fi
 
 # Create a temporary file for collecting raw session data
 TEMP_FILE=$(mktemp)
-trap 'rm -f "${TEMP_FILE}"' EXIT
+WARNINGS_FILE=$(mktemp)
+trap 'rm -f "${TEMP_FILE}" "${WARNINGS_FILE}"' EXIT
+
+# Counter for corrupted files
+CORRUPTED_COUNT=0
 
 # Find all JSONL files and extract usage data
 while IFS= read -r -d '' jsonl_file; do
@@ -108,7 +112,7 @@ while IFS= read -r -d '' jsonl_file; do
 
     # Extract assistant messages with usage info
     # Filter by project if specified
-    jq -c '
+    if ! jq -c '
         select(.type == "assistant" and .message.usage != null) |
         {
             sessionId: .sessionId,
@@ -118,8 +122,17 @@ while IFS= read -r -d '' jsonl_file; do
             input_tokens: .message.usage.input_tokens,
             output_tokens: .message.usage.output_tokens
         }
-    ' "${jsonl_file}" 2>/dev/null >> "${TEMP_FILE}" || true
+    ' "${jsonl_file}" 2>> "${WARNINGS_FILE}" >> "${TEMP_FILE}"; then
+        # jq failed - likely corrupted JSONL
+        CORRUPTED_COUNT=$((CORRUPTED_COUNT + 1))
+        echo "Warning: Failed to parse ${jsonl_file}" >> "${WARNINGS_FILE}"
+    fi
 done < <(find "${CLAUDE_PROJECTS_DIR}" -name "*.jsonl" -type f -print0)
+
+# Print warnings if any files were corrupted
+if [[ ${CORRUPTED_COUNT} -gt 0 ]]; then
+    echo "Warning: ${CORRUPTED_COUNT} JSONL file(s) had parsing errors and were skipped" >&2
+fi
 
 # Process collected data with jq
 jq -s --argjson priceConfig "${PRICE_CONFIG}" --arg projectFilter "${PROJECT_FILTER}" '

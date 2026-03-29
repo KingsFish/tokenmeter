@@ -273,6 +273,38 @@ body {
     text-decoration: underline;
 }
 
+/* Loading Indicator */
+.loading-indicator {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Empty Data Card */
+.empty-data-card {
+    text-align: center;
+    padding: 2rem;
+}
+
+.empty-data-card h3 {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.empty-data-card p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {

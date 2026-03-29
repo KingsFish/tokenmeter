@@ -448,11 +448,36 @@ function handleAddModelForm(event) {
     const outputPriceInput = document.getElementById('new-output-price');
 
     const modelName = modelNameInput.value.trim();
-    const inputPrice = parseFloat(inputPriceInput.value) || 0;
-    const outputPrice = parseFloat(outputPriceInput.value) || 0;
+    const inputPriceStr = inputPriceInput.value.trim();
+    const outputPriceStr = outputPriceInput.value.trim();
 
     if (!modelName) {
         showToast('Please enter a model name', 'error');
+        return;
+    }
+
+    // Validate prices are valid numbers
+    if (!inputPriceStr || isNaN(parseFloat(inputPriceStr))) {
+        showToast('Please enter a valid input price', 'error');
+        return;
+    }
+
+    if (!outputPriceStr || isNaN(parseFloat(outputPriceStr))) {
+        showToast('Please enter a valid output price', 'error');
+        return;
+    }
+
+    const inputPrice = parseFloat(inputPriceStr);
+    const outputPrice = parseFloat(outputPriceStr);
+
+    // Validate prices are positive
+    if (inputPrice < 0) {
+        showToast('Input price must be a positive number', 'error');
+        return;
+    }
+
+    if (outputPrice < 0) {
+        showToast('Output price must be a positive number', 'error');
         return;
     }
 

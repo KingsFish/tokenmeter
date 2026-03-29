@@ -94,12 +94,70 @@ async function fetchPrices() {
 // =============================================================================
 
 /**
- * Show loading state
+ * Show loading state with visual indicator
  */
 function showLoading() {
-    document.getElementById('total-tokens').textContent = '...';
-    document.getElementById('total-cost').textContent = '...';
-    document.getElementById('total-sessions').textContent = '...';
+    const tokensEl = document.getElementById('total-tokens');
+    const costEl = document.getElementById('total-cost');
+    const sessionsEl = document.getElementById('total-sessions');
+
+    // Clear and show loading indicators
+    if (tokensEl) {
+        tokensEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
+    }
+    if (costEl) {
+        costEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
+    }
+    if (sessionsEl) {
+        sessionsEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
+    }
+
+    // Show loading state in sessions table
+    const tbody = document.getElementById('sessions-body');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Loading...</td></tr>';
+    }
+}
+
+/**
+ * Show empty data message
+ */
+function showEmptyData() {
+    const tokensEl = document.getElementById('total-tokens');
+    const costEl = document.getElementById('total-cost');
+    const sessionsEl = document.getElementById('total-sessions');
+
+    if (tokensEl) tokensEl.textContent = '0';
+    if (costEl) costEl.textContent = '$0.00';
+    if (sessionsEl) sessionsEl.textContent = '0';
+
+    // Show empty message in sessions table
+    const tbody = document.getElementById('sessions-body');
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No usage data found</td></tr>';
+    }
+
+    // Show a message card
+    const container = document.querySelector('.container');
+    const existingEmptyMsg = document.querySelector('.empty-data-card');
+    if (!existingEmptyMsg) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'card empty-data-card';
+        emptyDiv.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" style="margin-bottom: 1rem;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <h3 style="color: var(--text-secondary); margin-bottom: 0.5rem;">No Usage Data Found</h3>
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">
+                    No Claude Code transcript files were found in ~/.claude/projects/
+                </p>
+            </div>
+        `;
+        container.insertBefore(emptyDiv, container.querySelector('.summary-cards').nextSibling);
+    }
 }
 
 /**
@@ -211,10 +269,33 @@ let projectChart = null;
 let modelChart = null;
 
 /**
+ * Check if Chart.js is available
+ * @returns {boolean} True if Chart.js is loaded
+ */
+function isChartJsAvailable() {
+    return typeof Chart !== 'undefined';
+}
+
+/**
+ * Show chart unavailable message
+ */
+function showChartUnavailableMessage() {
+    const chartContainers = document.querySelectorAll('.chart-container');
+    chartContainers.forEach(container => {
+        container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); text-align: center;"><p>Chart.js unavailable. Please check your network connection.</p></div>';
+    });
+}
+
+/**
  * Render all charts
  * @param {Object} data - Full data object from API
  */
 function renderCharts(data) {
+    if (!isChartJsAvailable()) {
+        console.warn('Chart.js is not available, skipping chart rendering');
+        showChartUnavailableMessage();
+        return;
+    }
     renderTokensChart(data.sessions);
     renderProjectChart(data.summary.by_project);
     renderModelChart(data.summary.by_model);
@@ -630,6 +711,15 @@ async function initDashboard() {
         // Fetch data
         const data = await fetchUsage();
 
+        // Check for empty data
+        if (!data.sessions || data.sessions.length === 0) {
+            showEmptyData();
+            // Still render empty charts
+            renderCharts(data);
+            showWarnings(data.price_config);
+            return;
+        }
+
         // Render components
         renderSummary(data.summary);
         renderCharts(data);
@@ -640,10 +730,13 @@ async function initDashboard() {
         console.error('Failed to initialize dashboard:', error);
         showError(error.message);
 
-        // Reset loading state
-        document.getElementById('total-tokens').textContent = '--';
-        document.getElementById('total-cost').textContent = '--';
-        document.getElementById('total-sessions').textContent = '--';
+        // Reset loading state on error
+        const tokensEl = document.getElementById('total-tokens');
+        const costEl = document.getElementById('total-cost');
+        const sessionsEl = document.getElementById('total-sessions');
+        if (tokensEl) tokensEl.textContent = '--';
+        if (costEl) costEl.textContent = '--';
+        if (sessionsEl) sessionsEl.textContent = '--';
     }
 }
 
