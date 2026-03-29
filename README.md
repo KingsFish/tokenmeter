@@ -299,7 +299,7 @@ yum install jq
 
 **Solution**:
 ```bash
-chmod +x /path/to/usage-tracker/scripts/*.sh
+chmod +x /path/to/tokenmeter/scripts/*.sh
 ```
 
 ### Cost shows "(default)" next to it
