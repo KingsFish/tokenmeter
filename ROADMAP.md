@@ -72,7 +72,70 @@ Use `frontend-dev` skill to modernize and enhance the Web Dashboard:
 
 ## Future Considerations
 
-### v1.3+
+### v1.3 - Easy Installation
+
+### 3. Plugin Marketplace Publishing
+
+**Priority: High**
+
+Enable one-command installation without downloading source code:
+
+```bash
+claude plugin install tokenmeter
+```
+
+**How Claude Code Marketplace Works:**
+
+Based on research, there are two approaches:
+
+**Option A: Submit to Official Marketplace (Recommended)**
+
+Submit PR to `anthropics/claude-plugins-official`:
+
+1. Fork `anthropics/claude-plugins-official`
+2. Create directory `external_plugins/tokenmeter/`
+3. Add `.claude-plugin/plugin.json`:
+   ```json
+   {
+     "name": "tokenmeter",
+     "description": "Measure your Claude Code token usage with CLI stats and Web Dashboard",
+     "author": { "name": "KingsFish" }
+   }
+   ```
+4. Add `.mcp.json` (if needed for MCP servers)
+5. Submit PR for review
+
+After approval, users can install:
+```bash
+claude plugin install tokenmeter
+```
+
+**Option B: Create Custom Marketplace**
+
+Host our own marketplace:
+
+1. Create `marketplace.json` in repo root with plugin list
+2. Users add marketplace once:
+   ```bash
+   claude marketplace add KingsFish/tokenmeter
+   ```
+3. Then install:
+   ```bash
+   claude plugin install tokenmeter
+   ```
+
+Reference: See `~/.claude/plugins/known_marketplaces.json` for marketplace structure.
+
+**Tasks:**
+- [x] Research Claude Code plugin marketplace requirements
+- [ ] Create PR to `anthropics/claude-plugins-official` (Option A)
+- [ ] Or create custom marketplace (Option B)
+- [ ] Update README with one-line installation instructions
+- [ ] Test installation on fresh Claude Code setup
+
+---
+
+### v1.4+
 - Export data to CSV/JSON
 - Per-session detail view with message breakdown
 - Usage alerts/notifications
