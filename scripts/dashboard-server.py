@@ -13,7 +13,7 @@ import sys
 import webbrowser
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 # Configuration
 DEFAULT_PORT = 8765
@@ -84,15 +84,38 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             self._send_error_response("Not found", status=404)
 
     def _handle_usage_api(self):
-        """Handle GET /api/usage - call parse-usage.sh and return JSON."""
+        """Handle GET /api/usage - call parse-usage.sh with filter params and return JSON."""
         try:
             parse_script = SCRIPTS_DIR / "parse-usage.sh"
             if not parse_script.exists():
                 self._send_error_response("parse-usage.sh not found", status=500)
                 return
 
+            # Parse query parameters
+            parsed_path = urlparse(self.path)
+            query_params = parse_qs(parsed_path.query)
+
+            # Build command arguments
+            cmd_args = [str(parse_script)]
+
+            # Date filters
+            if "last" in query_params:
+                cmd_args.extend(["--last", query_params["last"][0]])
+            if "from" in query_params:
+                cmd_args.extend(["--from", query_params["from"][0]])
+            if "to" in query_params:
+                cmd_args.extend(["--to", query_params["to"][0]])
+
+            # Model filter
+            if "model" in query_params:
+                cmd_args.extend(["--model", query_params["model"][0]])
+
+            # Project filter
+            if "project" in query_params:
+                cmd_args.extend(["--project", query_params["project"][0]])
+
             result = subprocess.run(
-                [str(parse_script)],
+                cmd_args,
                 capture_output=True,
                 text=True,
                 timeout=30
