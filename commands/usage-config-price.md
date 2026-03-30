@@ -42,22 +42,38 @@ This command manages model price configuration for cost estimation.
 ### Execute
 
 !`
+# Find the tokenmeter plugin directory
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+if [[ -n "$SCRIPT_PATH" ]]; then
+  TOKENMETER_DIR="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+else
+  # Fallback: search common plugin locations
+  for candidate in ~/.claude/plugins/tokenmeter ~/.local/share/claude/plugins/tokenmeter; do
+    if [[ -d "$candidate/scripts" ]]; then
+      TOKENMETER_DIR="$candidate"
+      break
+    fi
+  done
+fi
+
+SCRIPT="${TOKENMETER_DIR}/scripts/price-config.sh"
+
 if [ -z "$ARGUMENTS" ]; then
-  ./scripts/price-config.sh
+  "$SCRIPT"
 elif [ "$ARGUMENTS" = "--list" ]; then
-  ./scripts/price-config.sh --list
+  "$SCRIPT" --list
 elif [ "$ARGUMENTS" = "--unconfigured" ]; then
-  ./scripts/price-config.sh --unconfigured
+  "$SCRIPT" --unconfigured
 elif echo "$ARGUMENTS" | grep -q "^add "; then
-  ./scripts/price-config.sh $(echo "$ARGUMENTS" | sed 's/^add /add /')
+  "$SCRIPT" $(echo "$ARGUMENTS" | sed 's/^add /add /')
 elif echo "$ARGUMENTS" | grep -q "^set "; then
-  ./scripts/price-config.sh $(echo "$ARGUMENTS" | sed 's/^set /set /')
+  "$SCRIPT" $(echo "$ARGUMENTS" | sed 's/^set /set /')
 elif echo "$ARGUMENTS" | grep -q "^remove "; then
-  ./scripts/price-config.sh $(echo "$ARGUMENTS" | sed 's/^remove /remove /')
+  "$SCRIPT" $(echo "$ARGUMENTS" | sed 's/^remove /remove /')
 elif echo "$ARGUMENTS" | grep -q "^default "; then
-  ./scripts/price-config.sh $(echo "$ARGUMENTS" | sed 's/^default /default /')
+  "$SCRIPT" $(echo "$ARGUMENTS" | sed 's/^default /default /')
 elif [ "$ARGUMENTS" = "reset" ]; then
-  ./scripts/price-config.sh reset
+  "$SCRIPT" reset
 else
   echo "Unknown command: $ARGUMENTS"
   echo "Run /usage-config-price without arguments for help."
