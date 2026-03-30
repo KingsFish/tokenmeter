@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "tokenmeter-marketplace",
+  "description": "TokenMeter - Claude Code token usage tracking plugin",
+  "owner": {
+    "name": "KingsFish"
+  },
+  "plugins": [
+    {
+      "name": "tokenmeter",
+      "description": "Measure your Claude Code token usage with CLI stats and Web Dashboard",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/KingsFish/tokenmeter.git"
+      }
+    }
+  ]
+}
