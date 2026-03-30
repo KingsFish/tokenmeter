@@ -22,17 +22,23 @@ PRICE_CONFIG_LOCAL="${PROJECT_ROOT}/config/prices.json"
 
 # Parse arguments
 PROJECT_FILTER=""
+OUTPUT_FORMAT="json"
 while [[ $# -gt 0 ]]; do
     case $1 in
         --project)
             PROJECT_FILTER="$2"
             shift 2
             ;;
+        --summary)
+            OUTPUT_FORMAT="summary"
+            shift
+            ;;
         --help|-h)
-            echo "Usage: $0 [--project <path>]"
+            echo "Usage: $0 [--project <path>] [--summary]"
             echo ""
             echo "Options:"
             echo "  --project <path>  Filter by project path"
+            echo "  --summary         Output formatted summary instead of JSON"
             exit 0
             ;;
         *)
@@ -135,7 +141,119 @@ if [[ ${CORRUPTED_COUNT} -gt 0 ]]; then
 fi
 
 # Process collected data with jq
-jq -s --argjson priceConfig "${PRICE_CONFIG}" --arg projectFilter "${PROJECT_FILTER}" '
+if [[ "$OUTPUT_FORMAT" == "summary" ]]; then
+    # Output formatted summary
+    jq -s -r --argjson priceConfig "${PRICE_CONFIG}" --arg projectFilter "${PROJECT_FILTER}" '
+        def format_tokens:
+          if . >= 1000000 then
+            ((. / 1000000) * 10 | floor / 10 | tostring) + "M"
+          elif . >= 1000 then
+            ((. / 1000) | floor | tostring) + "K"
+          else
+            . | tostring
+          end;
+
+        def format_cost:
+          if . == null then "N/A"
+          elif . < 0.01 then "$0.00"
+          else "$" + ((. * 100 | floor) / 100 | tostring)
+          end;
+
+        def has_price_config(model):
+          ($priceConfig.model_prices[model] | type) == "object" and
+          $priceConfig.model_prices[model].input_per_million != null and
+          $priceConfig.model_prices[model].output_per_million != null;
+
+        # Filter by project if specified
+        (if $projectFilter != "" then
+            map(select(.cwd | index($projectFilter) != null))
+        else
+            .
+        end) |
+
+        # Group by sessionId - each group is an array of entries
+        group_by(.sessionId) | map(
+            . as $entries |
+            {
+                session_id: $entries[0].sessionId,
+                project_path: $entries[0].cwd,
+                project_name: ($entries[0].cwd | split("/") | last // $entries[0].cwd),
+                model: ($entries | group_by(.model) | sort_by(-length) | .[0][0].model),
+                input_tokens: ($entries | map(.input_tokens) | add),
+                output_tokens: ($entries | map(.output_tokens) | add),
+                turns: ($entries | length),
+                start_time: ($entries | map(.timestamp) | sort | first),
+                end_time: ($entries | map(.timestamp) | sort | last)
+            }
+        ) |
+
+        # Calculate totals
+        . as $sessions |
+        {
+            total_sessions: ($sessions | length),
+            total_tokens: ($sessions | map(.input_tokens + .output_tokens) | add // 0),
+            total_input_tokens: ($sessions | map(.input_tokens) | add // 0),
+            total_output_tokens: ($sessions | map(.output_tokens) | add // 0),
+            total_turns: ($sessions | map(.turns) | add // 0),
+            total_estimated_cost_usd: (
+                [$sessions[] | select(.estimated_cost_usd != null) | .estimated_cost_usd] | add // 0
+            ),
+            by_model: (
+                $sessions | group_by(.model) | map({
+                    key: .[0].model,
+                    value: {
+                        sessions: length,
+                        tokens: (map(.input_tokens + .output_tokens) | add),
+                        estimated_cost_usd: ([.[].estimated_cost_usd] | map(select(. != null)) | add // null),
+                        cost_configured: has_price_config(.[0].model)
+                    }
+                }) | from_entries
+            ),
+            by_project: (
+                $sessions | group_by(.project_name) | map({
+                    key: .[0].project_name,
+                    value: {
+                        sessions: length,
+                        tokens: (map(.input_tokens + .output_tokens) | add),
+                        estimated_cost_usd: ([.[].estimated_cost_usd] | map(select(. != null)) | add // null)
+                    }
+                }) | from_entries
+            ),
+            recent_sessions: ($sessions | sort_by(.start_time) | .[-5:] | reverse)
+        } |
+
+        # Output formatted text as array
+        [
+        "=== Claude Code Usage Summary ===",
+        "",
+        "Total: \(.total_sessions) sessions | \(.total_tokens | format_tokens) tokens (\(.total_input_tokens | format_tokens) input + \(.total_output_tokens | format_tokens) output) | \(.total_turns) turns",
+        "",
+        "Estimated Cost: \(.total_estimated_cost_usd | format_cost)",
+        (if [.by_model | to_entries[] | select(.value.cost_configured == false)] | length > 0 then
+          "                (using default price for models without explicit config)"
+        else empty end),
+        "",
+        "By Project:",
+        (.by_project | to_entries | sort_by(-.value.sessions) | limit(5; .[]) |
+          "  \(.key | .[0:20])  \(.value.sessions) sessions | \(.value.tokens | format_tokens) tokens | \(.value.estimated_cost_usd | format_cost)"
+        ),
+        "",
+        "By Model:",
+        (.by_model | to_entries | sort_by(-.value.sessions) | .[] |
+          "  \(.key)  \(.value.sessions) sessions | \(.value.tokens | format_tokens) tokens | \(if .value.cost_configured then .value.estimated_cost_usd | format_cost else .value.estimated_cost_usd | format_cost + " (default)" end)"
+        ),
+        "",
+        "Recent Sessions (last 5):",
+        (.recent_sessions | .[] |
+          "  \(.start_time | split("T") | .[0]) \(.start_time | split("T")[1] | split(":")[0:2] | join(":"))  \(.project_name | .[0:15]) (\(.model))  \(.input_tokens + .output_tokens | format_tokens) tokens  \(.turns) turns"
+        ),
+        "",
+        "Run /usage-dashboard for detailed charts and cost analysis."
+    ]
+    ' "${TEMP_FILE}" | jq -r '.[]'
+else
+    # Output JSON (default)
+    jq -s --argjson priceConfig "${PRICE_CONFIG}" --arg projectFilter "${PROJECT_FILTER}" '
     # Group by sessionId
     def group_by_session:
         group_by(.sessionId) | map({
@@ -257,3 +375,4 @@ jq -s --argjson priceConfig "${PRICE_CONFIG}" --arg projectFilter "${PROJECT_FIL
         }
     }
 ' "${TEMP_FILE}"
+fi
