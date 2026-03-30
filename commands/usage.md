@@ -5,8 +5,23 @@ description: Display Claude Code token usage summary
 
 ## Context
 
-Test output: !`echo "Hello"`
+Usage summary data:
+
+!`
+SCRIPT=""
+for p in ~/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/scripts/parse-usage.sh; do
+  if [ -x "$p" ]; then
+    SCRIPT="$p"
+    break
+  fi
+done
+if [ -n "$SCRIPT" ]; then
+  "$SCRIPT" --summary
+else
+  echo "Error: tokenmeter plugin not found"
+fi
+`
 
 ## Your task
 
-Show the test output.
+Display the usage summary data above to the user.
