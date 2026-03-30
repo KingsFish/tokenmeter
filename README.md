@@ -33,19 +33,35 @@ TokenMeter helps you monitor your Claude Code token consumption and estimate cos
 
 - **Python 3**: Required for the web dashboard server (usually pre-installed)
 
-### Install the Plugin
+### Quick Install (Recommended)
 
-1. Clone or download this repository to your local machine
+Install directly from the marketplace:
 
-2. Install the plugin with Claude Code:
-   ```bash
-   claude plugin install /path/to/tokenmeter
-   ```
+```bash
+# Add the marketplace
+claude marketplace add KingsFish/tokenmeter
 
-3. Verify installation:
-   ```bash
-   claude plugin list
-   ```
+# Install the plugin
+claude plugin install tokenmeter
+```
+
+### Manual Install
+
+Alternatively, install from a local clone:
+
+```bash
+# Clone the repository
+git clone https://github.com/KingsFish/tokenmeter.git
+
+# Install the plugin
+claude plugin install /path/to/tokenmeter
+```
+
+### Verify Installation
+
+```bash
+claude plugin list
+```
 
 ## Commands
 

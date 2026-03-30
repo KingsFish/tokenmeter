@@ -282,9 +282,10 @@ Reference: See `~/.claude/plugins/known_marketplaces.json` for marketplace struc
 
 **Tasks:**
 - [x] Research Claude Code plugin marketplace requirements
-- [ ] Create PR to `anthropics/claude-plugins-official` (Option A)
-- [ ] Or create custom marketplace (Option B)
-- [ ] Update README with one-line installation instructions
+- [x] Create custom marketplace (marketplace.json)
+- [x] Update README with one-line installation instructions
+- [x] Update plugin.json with proper metadata for marketplace
+- [ ] Create GitHub repository (KingsFish/tokenmeter)
 - [ ] Test installation on fresh Claude Code setup
 
 ---
