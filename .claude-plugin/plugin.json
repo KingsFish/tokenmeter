@@ -7,9 +7,6 @@
   },
   "keywords": ["tokens", "usage", "cost", "tracking", "dashboard", "meter"],
   "homepage": "https://github.com/KingsFish/tokenmeter",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/KingsFish/tokenmeter.git"
-  },
+  "repository": "https://github.com/KingsFish/tokenmeter.git",
   "license": "MIT"
 }
