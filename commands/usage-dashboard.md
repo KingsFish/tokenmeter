@@ -30,22 +30,20 @@ If it doesn't open, you can access it manually at the URL shown in the output.
 
 !`
 # Find the tokenmeter plugin directory based on this script's location
-# The skill file is at <plugin-dir>/commands/usage-dashboard.md
-# Scripts are at <plugin-dir>/scripts/
-SCRIPT_PATH="${BASH_SOURCE[0]}"
-if [[ -z "$SCRIPT_PATH" ]]; then
-  # Fallback: search plugin cache locations
-  for candidate in \
-    ~/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/ \
-    ~/.local/share/claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/; do
-    if [[ -d "$candidate/scripts" ]]; then
-      TOKENMETER_DIR="$candidate"
-      break
-    fi
-  done
-else
-  # Derive from script path - go up two levels from commands/ to plugin root
-  TOKENMETER_DIR="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+# First try fallback search (more reliable across execution contexts)
+TOKENMETER_DIR=""
+for candidate in \
+  ~/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/ \
+  ~/.local/share/claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/; do
+  if [[ -d "${candidate%/}/scripts" ]]; then
+    TOKENMETER_DIR="${candidate%/}"
+    break
+  fi
+done
+
+# Fallback to BASH_SOURCE if cache search failed
+if [[ -z "$TOKENMETER_DIR" && -n "${BASH_SOURCE[0]}" ]]; then
+  TOKENMETER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
 
 if [[ -z "${TOKENMETER_DIR:-}" ]]; then

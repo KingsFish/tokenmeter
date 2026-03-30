@@ -43,19 +43,20 @@ This command manages model price configuration for cost estimation.
 
 !`
 # Find the tokenmeter plugin directory
-SCRIPT_PATH="${BASH_SOURCE[0]}"
-if [[ -n "$SCRIPT_PATH" ]]; then
-  TOKENMETER_DIR="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
-else
-  # Fallback: search plugin cache locations
-  for candidate in \
-    ~/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/ \
-    ~/.local/share/claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/; do
-    if [[ -d "$candidate/scripts" ]]; then
-      TOKENMETER_DIR="$candidate"
-      break
-    fi
-  done
+# First try fallback search (more reliable across execution contexts)
+TOKENMETER_DIR=""
+for candidate in \
+  ~/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/ \
+  ~/.local/share/claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/; do
+  if [[ -d "${candidate%/}/scripts" ]]; then
+    TOKENMETER_DIR="${candidate%/}"
+    break
+  fi
+done
+
+# Fallback to BASH_SOURCE if cache search failed
+if [[ -z "$TOKENMETER_DIR" && -n "${BASH_SOURCE[0]}" ]]; then
+  TOKENMETER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
 
 SCRIPT="${TOKENMETER_DIR}/scripts/price-config.sh"
