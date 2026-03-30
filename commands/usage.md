@@ -5,10 +5,10 @@ allowed-tools: [Bash]
 
 ## Context
 
-Usage summary data:
+Current date: !`date`
 
-!`/Users/zhiquan/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/0.0.1/scripts/parse-usage.sh --summary`
+Test output: !`echo "Hello from tokenmeter"`
 
 ## Your task
 
-Display the usage summary data above to the user.
+Show the test output and date to the user.
