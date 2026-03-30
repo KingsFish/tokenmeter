@@ -34,8 +34,10 @@ If it doesn't open, you can access it manually at the URL shown in the output.
 # Scripts are at <plugin-dir>/scripts/
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 if [[ -z "$SCRIPT_PATH" ]]; then
-  # Fallback: try to find tokenmeter in common plugin locations
-  for candidate in ~/.claude/plugins/tokenmeter ~/.local/share/claude/plugins/tokenmeter; do
+  # Fallback: search plugin cache locations
+  for candidate in \
+    ~/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/ \
+    ~/.local/share/claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/; do
     if [[ -d "$candidate/scripts" ]]; then
       TOKENMETER_DIR="$candidate"
       break

@@ -11,8 +11,10 @@ SCRIPT_PATH="${BASH_SOURCE[0]}"
 if [[ -n "$SCRIPT_PATH" ]]; then
   TOKENMETER_DIR="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
 else
-  # Fallback: search common plugin locations
-  for candidate in ~/.claude/plugins/tokenmeter ~/.local/share/claude/plugins/tokenmeter; do
+  # Fallback: search common plugin cache locations
+  for candidate in \
+    ~/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/ \
+    ~/.local/share/claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/; do
     if [[ -d "$candidate/scripts" ]]; then
       TOKENMETER_DIR="$candidate"
       break
