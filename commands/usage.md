@@ -1,14 +1,12 @@
 ---
+allowed-tools: Bash
 description: Display Claude Code token usage summary
-allowed-tools: [Bash]
 ---
 
 ## Context
 
-Current date: !`date`
-
-Test output: !`echo "Hello from tokenmeter"`
+Test output: !`echo "Hello"`
 
 ## Your task
 
-Show the test output and date to the user.
+Show the test output.
