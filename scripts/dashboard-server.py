@@ -275,17 +275,12 @@ def main():
     def signal_handler(sig, frame):
         print("\nShutting down server...")
         httpd.shutdown()
-        sys.exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        httpd.server_close()
+    httpd.serve_forever()
+    httpd.server_close()
 
 
 if __name__ == "__main__":
