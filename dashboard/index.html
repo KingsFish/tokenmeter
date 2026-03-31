@@ -21,6 +21,43 @@
             </a>
         </header>
 
+        <!-- Filter Bar -->
+        <section class="filter-bar card">
+            <div class="filter-bar__row">
+                <!-- Quick Date Buttons -->
+                <div class="filter-bar__group">
+                    <span class="filter-bar__label">Date:</span>
+                    <button class="filter-bar__btn" data-last="7" data-active="false">7 Days</button>
+                    <button class="filter-bar__btn" data-last="30" data-active="false">30 Days</button>
+                    <button class="filter-bar__btn" data-last="" data-active="true">All</button>
+                </div>
+
+                <!-- Custom Date Range -->
+                <div class="filter-bar__group">
+                    <span class="filter-bar__label">Custom:</span>
+                    <input type="date" class="filter-bar__input" id="filter-from" placeholder="From">
+                    <input type="date" class="filter-bar__input" id="filter-to" placeholder="To">
+                </div>
+
+                <!-- Model Filter -->
+                <div class="filter-bar__group">
+                    <span class="filter-bar__label">Model:</span>
+                    <select class="filter-bar__select" id="filter-model">
+                        <option value="">All Models</option>
+                    </select>
+                </div>
+
+                <!-- Project Filter -->
+                <div class="filter-bar__group">
+                    <span class="filter-bar__label">Project:</span>
+                    <input type="text" class="filter-bar__input" id="filter-project" placeholder="Search project...">
+                </div>
+
+                <!-- Reset Button -->
+                <button class="filter-bar__reset" id="filter-reset">Reset</button>
+            </div>
+        </section>
+
         <!-- Summary Cards -->
         <section class="summary-cards">
             <div class="card summary-card">

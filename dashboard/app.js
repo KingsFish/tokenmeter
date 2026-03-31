@@ -2,6 +2,200 @@
 // Implements data fetching, charts, and rendering for the usage tracker dashboard
 
 // =============================================================================
+// Filter State Management
+// =============================================================================
+
+/**
+ * Filter state object
+ */
+const filterState = {
+    last: '',       // '7', '30', or '' for all
+    from: '',       // YYYY-MM-DD
+    to: '',         // YYYY-MM-DD
+    model: '',      // model name
+    project: ''     // project name (partial match)
+};
+
+/**
+ * Available models (populated from API data)
+ */
+let availableModels = [];
+
+/**
+ * Build API URL with filter parameters
+ * @returns {string} API URL with query params
+ */
+function buildApiUrl() {
+    const params = new URLSearchParams();
+
+    // Priority: custom date range > quick date > no date filter
+    if (filterState.from || filterState.to) {
+        if (filterState.from) params.set('from', filterState.from);
+        if (filterState.to) params.set('to', filterState.to);
+    } else if (filterState.last) {
+        params.set('last', filterState.last);
+    }
+
+    if (filterState.model) params.set('model', filterState.model);
+    if (filterState.project) params.set('project', filterState.project);
+
+    const queryString = params.toString();
+    return queryString ? `/api/usage?${queryString}` : '/api/usage';
+}
+
+/**
+ * Reset all filters to default state
+ */
+function resetFilters() {
+    filterState.last = '';
+    filterState.from = '';
+    filterState.to = '';
+    filterState.model = '';
+    filterState.project = '';
+
+    // Reset UI
+    document.querySelectorAll('.filter-bar__btn[data-last]').forEach(btn => {
+        btn.dataset.active = btn.dataset.last === '' ? 'true' : 'false';
+    });
+    document.getElementById('filter-from').value = '';
+    document.getElementById('filter-to').value = '';
+    document.getElementById('filter-model').value = '';
+    document.getElementById('filter-project').value = '';
+
+    // Reload data
+    initDashboard();
+}
+
+/**
+ * Update filter state from UI
+ */
+function updateFiltersFromUI() {
+    // Get quick date buttons state
+    const activeBtn = document.querySelector('.filter-bar__btn[data-active="true"]');
+    if (activeBtn && !filterState.from && !filterState.to) {
+        filterState.last = activeBtn.dataset.last;
+    }
+
+    // Get custom date inputs
+    const fromInput = document.getElementById('filter-from');
+    const toInput = document.getElementById('filter-to');
+    filterState.from = fromInput ? fromInput.value : '';
+    filterState.to = toInput ? toInput.value : '';
+
+    // If custom dates set, clear quick date
+    if (filterState.from || filterState.to) {
+        filterState.last = '';
+    }
+
+    // Get model select
+    const modelSelect = document.getElementById('filter-model');
+    filterState.model = modelSelect ? modelSelect.value : '';
+
+    // Get project input
+    const projectInput = document.getElementById('filter-project');
+    filterState.project = projectInput ? projectInput.value.trim() : '';
+}
+
+/**
+ * Populate model dropdown from available models
+ */
+function populateModelDropdown() {
+    const modelSelect = document.getElementById('filter-model');
+    if (!modelSelect) return;
+
+    // Clear existing options except "All Models"
+    while (modelSelect.options.length > 1) {
+        modelSelect.remove(1);
+    }
+
+    // Add available models
+    availableModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model;
+        option.textContent = model;
+        modelSelect.appendChild(option);
+    });
+}
+
+/**
+ * Initialize filter UI event listeners
+ */
+function initFilterListeners() {
+    // Quick date buttons
+    document.querySelectorAll('.filter-bar__btn[data-last]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Clear custom dates when clicking quick buttons
+            document.getElementById('filter-from').value = '';
+            document.getElementById('filter-to').value = '';
+            filterState.from = '';
+            filterState.to = '';
+
+            // Update active state
+            document.querySelectorAll('.filter-bar__btn[data-last]').forEach(b => {
+                b.dataset.active = 'false';
+            });
+            btn.dataset.active = 'true';
+            filterState.last = btn.dataset.last;
+
+            initDashboard();
+        });
+    });
+
+    // Custom date inputs
+    const fromInput = document.getElementById('filter-from');
+    const toInput = document.getElementById('filter-to');
+
+    if (fromInput) {
+        fromInput.addEventListener('change', () => {
+            // Deactivate quick buttons when custom date set
+            document.querySelectorAll('.filter-bar__btn[data-last]').forEach(btn => {
+                btn.dataset.active = 'false';
+            });
+            updateFiltersFromUI();
+            initDashboard();
+        });
+    }
+
+    if (toInput) {
+        toInput.addEventListener('change', () => {
+            document.querySelectorAll('.filter-bar__btn[data-last]').forEach(btn => {
+                btn.dataset.active = 'false';
+            });
+            updateFiltersFromUI();
+            initDashboard();
+        });
+    }
+
+    // Model select
+    const modelSelect = document.getElementById('filter-model');
+    if (modelSelect) {
+        modelSelect.addEventListener('change', () => {
+            updateFiltersFromUI();
+            initDashboard();
+        });
+    }
+
+    // Project input (with debounce)
+    const projectInput = document.getElementById('filter-project');
+    if (projectInput) {
+        let debounceTimer;
+        projectInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                updateFiltersFromUI();
+                initDashboard();
+            }, 300);
+        });
+    }
+
+    // Reset button
+    const resetBtn = document.getElementById('filter-reset');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetFilters);
+    }
+}
+
+// =============================================================================
 // Utility Functions
 // =============================================================================
 
@@ -66,11 +260,12 @@ function formatDateOnly(isoString) {
 // =============================================================================
 
 /**
- * Fetch usage data from the API
+ * Fetch usage data from the API with filter parameters
  * @returns {Promise<Object>} Usage data object
  */
 async function fetchUsage() {
-    const response = await fetch('/api/usage');
+    const url = buildApiUrl();
+    const response = await fetch(url);
     if (!response.ok) {
         throw new Error(`Failed to fetch usage data: ${response.status}`);
     }
@@ -708,8 +903,14 @@ async function initDashboard() {
     showLoading();
 
     try {
-        // Fetch data
+        // Fetch data with current filters
         const data = await fetchUsage();
+
+        // Update available models list for dropdown
+        if (data.summary && data.summary.by_model) {
+            availableModels = Object.keys(data.summary.by_model);
+            populateModelDropdown();
+        }
 
         // Check for empty data
         if (!data.sessions || data.sessions.length === 0) {
@@ -741,4 +942,7 @@ async function initDashboard() {
 }
 
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', initDashboard);
+document.addEventListener('DOMContentLoaded', () => {
+    initFilterListeners();
+    initDashboard();
+});

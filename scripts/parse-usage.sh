@@ -3,10 +3,15 @@
 # parse-usage.sh - Parse Claude Code transcript files and output JSON statistics
 #
 # Usage:
-#   ./parse-usage.sh [--project <path>]
+#   ./parse-usage.sh [--project <path>] [--last <days>] [--model <name>] [--from <date>] [--to <date>] [--summary]
 #
 # Options:
-#   --project <path>  Filter by project path (e.g., /Users/zhiquan/code/myproject)
+#   --project <path>  Filter by project path or name (partial match)
+#   --last <days>     Filter sessions from last N days (e.g., 7, 30)
+#   --model <name>    Filter by model name (exact match)
+#   --from <date>     Filter sessions starting from date (YYYY-MM-DD)
+#   --to <date>       Filter sessions ending at date (YYYY-MM-DD)
+#   --summary         Output formatted summary instead of JSON
 #
 
 set -euo pipefail
@@ -22,6 +27,10 @@ PRICE_CONFIG_LOCAL="${PROJECT_ROOT}/config/prices.json"
 
 # Parse arguments
 PROJECT_FILTER=""
+LAST_DAYS=""
+MODEL_FILTER=""
+FROM_DATE=""
+TO_DATE=""
 OUTPUT_FORMAT="json"
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -29,15 +38,35 @@ while [[ $# -gt 0 ]]; do
             PROJECT_FILTER="$2"
             shift 2
             ;;
+        --last)
+            LAST_DAYS="$2"
+            shift 2
+            ;;
+        --model)
+            MODEL_FILTER="$2"
+            shift 2
+            ;;
+        --from)
+            FROM_DATE="$2"
+            shift 2
+            ;;
+        --to)
+            TO_DATE="$2"
+            shift 2
+            ;;
         --summary)
             OUTPUT_FORMAT="summary"
             shift
             ;;
         --help|-h)
-            echo "Usage: $0 [--project <path>] [--summary]"
+            echo "Usage: $0 [--project <path>] [--last <days>] [--model <name>] [--from <date>] [--to <date>] [--summary]"
             echo ""
             echo "Options:"
-            echo "  --project <path>  Filter by project path"
+            echo "  --project <path>  Filter by project path or name (partial match)"
+            echo "  --last <days>     Filter sessions from last N days (e.g., 7, 30)"
+            echo "  --model <name>    Filter by model name (exact match)"
+            echo "  --from <date>     Filter sessions starting from date (YYYY-MM-DD)"
+            echo "  --to <date>       Filter sessions ending at date (YYYY-MM-DD)"
             echo "  --summary         Output formatted summary instead of JSON"
             exit 0
             ;;
@@ -135,6 +164,12 @@ while IFS= read -r -d '' jsonl_file; do
     fi
 done < <(find "${CLAUDE_PROJECTS_DIR}" -name "*.jsonl" -type f -print0)
 
+# Calculate date boundaries if --last is specified
+if [[ -n "${LAST_DAYS}" ]]; then
+    # Calculate from_date based on LAST_DAYS
+    FROM_DATE=$(date -u -v-${LAST_DAYS}d +"%Y-%m-%d" 2>/dev/null || date -u -d "${LAST_DAYS} days ago" +"%Y-%m-%d" 2>/dev/null || date -u --date="${LAST_DAYS} days ago" +"%Y-%m-%d")
+fi
+
 # Print warnings if any files were corrupted
 if [[ ${CORRUPTED_COUNT} -gt 0 ]]; then
     echo "Warning: ${CORRUPTED_COUNT} JSONL file(s) had parsing errors and were skipped" >&2
@@ -143,7 +178,11 @@ fi
 # Process collected data with jq
 if [[ "$OUTPUT_FORMAT" == "summary" ]]; then
     # Output formatted summary
-    jq -s -r --argjson priceConfig "${PRICE_CONFIG}" --arg projectFilter "${PROJECT_FILTER}" '
+    jq -s -r --argjson priceConfig "${PRICE_CONFIG}" \
+          --arg projectFilter "${PROJECT_FILTER}" \
+          --arg modelFilter "${MODEL_FILTER}" \
+          --arg fromDate "${FROM_DATE}" \
+          --arg toDate "${TO_DATE}" '
         def format_tokens:
           if . >= 1000000 then
             ((. / 1000000) * 10 | floor / 10 | tostring) + "M"
@@ -164,12 +203,51 @@ if [[ "$OUTPUT_FORMAT" == "summary" ]]; then
           $priceConfig.model_prices[model].input_per_million != null and
           $priceConfig.model_prices[model].output_per_million != null;
 
-        # Filter by project if specified
-        (if $projectFilter != "" then
-            map(select(.cwd | index($projectFilter) != null))
-        else
-            .
-        end) |
+        # Calculate cost for a model
+        def calc_cost(model; input; output):
+          if ($priceConfig.model_prices[model] | type) == "object" then
+            if $priceConfig.model_prices[model].input_per_million == null or
+               $priceConfig.model_prices[model].output_per_million == null then
+                null
+            else
+                ((input / 1000000) * $priceConfig.model_prices[model].input_per_million) +
+                ((output / 1000000) * $priceConfig.model_prices[model].output_per_million)
+            end
+          else
+            # Use default price
+            ((input / 1000000) * $priceConfig.default_price.input_per_million) +
+            ((output / 1000000) * $priceConfig.default_price.output_per_million)
+          end;
+
+        # Date filter: check if session date is within range
+        def date_filter(session):
+          if $fromDate != "" and $toDate != "" then
+            (session.start_time | split("T")[0]) >= $fromDate and
+            (session.start_time | split("T")[0]) <= $toDate
+          elif $fromDate != "" then
+            (session.start_time | split("T")[0]) >= $fromDate
+          elif $toDate != "" then
+            (session.start_time | split("T")[0]) <= $toDate
+          else
+            true
+          end;
+
+        # Project filter: partial match on cwd or project_name
+        def project_filter(session):
+          if $projectFilter != "" then
+            (session.project_path | index($projectFilter)) != null or
+            (session.project_name | index($projectFilter)) != null
+          else
+            true
+          end;
+
+        # Model filter: exact match
+        def model_filter(session):
+          if $modelFilter != "" then
+            session.model == $modelFilter
+          else
+            true
+          end;
 
         # Group by sessionId - each group is an array of entries
         group_by(.sessionId) | map(
@@ -184,8 +262,12 @@ if [[ "$OUTPUT_FORMAT" == "summary" ]]; then
                 turns: ($entries | length),
                 start_time: ($entries | map(.timestamp) | sort | first),
                 end_time: ($entries | map(.timestamp) | sort | last)
-            }
+            } |
+            .estimated_cost_usd = calc_cost(.model; .input_tokens; .output_tokens)
         ) |
+
+        # Apply filters
+        map(select(date_filter(.) and project_filter(.) and model_filter(.))) |
 
         # Calculate totals
         . as $sessions |
@@ -253,7 +335,11 @@ if [[ "$OUTPUT_FORMAT" == "summary" ]]; then
     ' "${TEMP_FILE}" | jq -r '.[]'
 else
     # Output JSON (default)
-    jq -s --argjson priceConfig "${PRICE_CONFIG}" --arg projectFilter "${PROJECT_FILTER}" '
+    jq -s --argjson priceConfig "${PRICE_CONFIG}" \
+          --arg projectFilter "${PROJECT_FILTER}" \
+          --arg modelFilter "${MODEL_FILTER}" \
+          --arg fromDate "${FROM_DATE}" \
+          --arg toDate "${TO_DATE}" '
     # Group by sessionId
     def group_by_session:
         group_by(.sessionId) | map({
@@ -283,12 +369,35 @@ else
         $priceConfig.model_prices[model].input_per_million != null and
         $priceConfig.model_prices[model].output_per_million != null;
 
-    # Filter by project if specified
-    (if $projectFilter != "" then
-        map(select(.cwd | index($projectFilter) != null))
-    else
-        .
-    end) |
+    # Date filter: check if session date is within range
+    def date_filter(session):
+      if $fromDate != "" and $toDate != "" then
+        (session.start_time | split("T")[0]) >= $fromDate and
+        (session.start_time | split("T")[0]) <= $toDate
+      elif $fromDate != "" then
+        (session.start_time | split("T")[0]) >= $fromDate
+      elif $toDate != "" then
+        (session.start_time | split("T")[0]) <= $toDate
+      else
+        true
+      end;
+
+    # Project filter: partial match on cwd or project_name
+    def project_filter(session):
+      if $projectFilter != "" then
+        (session.project_path | index($projectFilter)) != null or
+        (session.project_name | index($projectFilter)) != null
+      else
+        true
+      end;
+
+    # Model filter: exact match
+    def model_filter(session):
+      if $modelFilter != "" then
+        session.model == $modelFilter
+      else
+        true
+      end;
 
     # Group by session
     group_by_session |
@@ -314,6 +423,9 @@ else
         ) |
         .estimated_cost_usd = calc_cost(.model; .input_tokens; .output_tokens)
     ) |
+
+    # Apply filters
+    map(select(date_filter(.) and project_filter(.) and model_filter(.))) |
 
     # Sort by start_time
     sort_by(.start_time) |

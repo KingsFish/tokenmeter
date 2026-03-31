@@ -74,9 +74,106 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
+}
+
+/* Filter Bar */
+.filter-bar {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+}
+
+.filter-bar__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+.filter-bar__group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-bar__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-bar__btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-bar__btn:hover {
+    background-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.filter-bar__btn[data-active="true"] {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.filter-bar__input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    min-width: 120px;
+}
+
+.filter-bar__input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.filter-bar__select {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    min-width: 150px;
+    cursor: pointer;
+}
+
+.filter-bar__select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.filter-bar__reset {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-bar__reset:hover {
+    background-color: var(--border-color);
+    color: var(--text-color);
 }
 
 .header__title {
@@ -319,6 +416,25 @@ body {
 
     .header__title {
         font-size: 1.25rem;
+    }
+
+    .filter-bar__row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-bar__group {
+        flex-wrap: wrap;
+    }
+
+    .filter-bar__input,
+    .filter-bar__select {
+        min-width: 100px;
+        flex: 1;
+    }
+
+    .filter-bar__reset {
+        align-self: flex-end;
     }
 
     .summary-cards {
