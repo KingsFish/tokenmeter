@@ -293,12 +293,16 @@ async function fetchPrices() {
  */
 function showLoading() {
     const tokensEl = document.getElementById('total-tokens');
+    const turnsEl = document.getElementById('total-turns');
     const costEl = document.getElementById('total-cost');
     const sessionsEl = document.getElementById('total-sessions');
 
     // Clear and show loading indicators
     if (tokensEl) {
         tokensEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
+    }
+    if (turnsEl) {
+        turnsEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
     }
     if (costEl) {
         costEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
@@ -319,10 +323,12 @@ function showLoading() {
  */
 function showEmptyData() {
     const tokensEl = document.getElementById('total-tokens');
+    const turnsEl = document.getElementById('total-turns');
     const costEl = document.getElementById('total-cost');
     const sessionsEl = document.getElementById('total-sessions');
 
     if (tokensEl) tokensEl.textContent = '0';
+    if (turnsEl) turnsEl.textContent = '0';
     if (costEl) costEl.textContent = '$0.00';
     if (sessionsEl) sessionsEl.textContent = '0';
 
@@ -429,6 +435,7 @@ function showError(message) {
 function renderSummary(summary) {
     const totalTokens = summary.total_input_tokens + summary.total_output_tokens;
     document.getElementById('total-tokens').textContent = formatTokens(totalTokens);
+    document.getElementById('total-turns').textContent = summary.total_turns.toLocaleString();
     document.getElementById('total-cost').textContent = formatCost(summary.total_estimated_cost_usd);
     document.getElementById('total-sessions').textContent = summary.total_sessions.toLocaleString();
 }
@@ -933,9 +940,11 @@ async function initDashboard() {
 
         // Reset loading state on error
         const tokensEl = document.getElementById('total-tokens');
+        const turnsEl = document.getElementById('total-turns');
         const costEl = document.getElementById('total-cost');
         const sessionsEl = document.getElementById('total-sessions');
         if (tokensEl) tokensEl.textContent = '--';
+        if (turnsEl) turnsEl.textContent = '--';
         if (costEl) costEl.textContent = '--';
         if (sessionsEl) sessionsEl.textContent = '--';
     }
