@@ -18,13 +18,11 @@
 3. README documentation covers installation, usage, and troubleshooting
 4. Fresh installation tested on clean Claude Code setup
 
-**Key Tasks:**
-- Create GitHub repository (KingsFish/tokenmeter)
-- Push code to main branch
-- Test installation via marketplace
-- Update README with marketplace instructions
+**Plans:** 2 plans
 
-**Estimated Plans:** 2
+Plans:
+- [ ] 01-01-PLAN.md — Push code to GitHub, verify README documentation
+- [ ] 01-02-PLAN.md — Test marketplace installation and command functionality
 
 ---
 
