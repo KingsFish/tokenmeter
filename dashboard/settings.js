@@ -173,7 +173,7 @@ function setButtonLoading(button, loading) {
     if (loading) {
         button.disabled = true;
         button.dataset.originalText = button.textContent;
-        button.textContent = 'Saving...';
+        button.textContent = i18n.currentLang === 'zh' ? '保存中...' : 'Saving...';
     } else {
         button.disabled = false;
         button.textContent = button.dataset.originalText || button.textContent;
@@ -230,7 +230,7 @@ function renderConfiguredModelsTable() {
 
     if (allModels.size === 0) {
         tbody.appendChild(createEmptyTableRow(
-            'No models configured. Add models below or from unconfigured models section.',
+            i18n.t('noModelsConfigured'),
             4
         ));
         return;
@@ -325,7 +325,7 @@ function renderUnconfiguredModels() {
     if (finalUnconfigured.length === 0) {
         const emptyMsg = document.createElement('p');
         emptyMsg.className = 'empty-state';
-        emptyMsg.textContent = 'All detected models have pricing configured.';
+        emptyMsg.textContent = i18n.t('allModelsConfigured');
         container.appendChild(emptyMsg);
         return;
     }
@@ -440,7 +440,7 @@ function handleAddFromUnconfigured(modelName) {
     renderConfiguredModelsTable();
     renderUnconfiguredModels();
 
-    showToast(`Added "${modelName}" with default prices. You can edit the prices in the table above.`);
+    showToast(i18n.t('added') + ' "' + modelName + '" ' + (i18n.currentLang === 'zh' ? '使用默认价格' : 'with default prices'));
 }
 
 /**
@@ -459,18 +459,18 @@ function handleAddModelForm(event) {
     const outputPriceStr = outputPriceInput.value.trim();
 
     if (!modelName) {
-        showToast('Please enter a model name', 'error');
+        showToast(i18n.t('enterModelName'), 'error');
         return;
     }
 
     // Validate prices are valid numbers
     if (!inputPriceStr || isNaN(parseFloat(inputPriceStr))) {
-        showToast('Please enter a valid input price', 'error');
+        showToast(i18n.t('enterValidPrice'), 'error');
         return;
     }
 
     if (!outputPriceStr || isNaN(parseFloat(outputPriceStr))) {
-        showToast('Please enter a valid output price', 'error');
+        showToast(i18n.t('enterValidPrice'), 'error');
         return;
     }
 
@@ -479,12 +479,12 @@ function handleAddModelForm(event) {
 
     // Validate prices are positive
     if (inputPrice < 0) {
-        showToast('Input price must be a positive number', 'error');
+        showToast(i18n.t('priceMustBePositive'), 'error');
         return;
     }
 
     if (outputPrice < 0) {
-        showToast('Output price must be a positive number', 'error');
+        showToast(i18n.t('priceMustBePositive'), 'error');
         return;
     }
 
@@ -495,7 +495,7 @@ function handleAddModelForm(event) {
     ]);
 
     if (existingModels.has(modelName) && !pendingChanges.deleted.includes(modelName)) {
-        showToast(`Model "${modelName}" already exists`, 'error');
+        showToast(i18n.t('modelExists'), 'error');
         return;
     }
 
@@ -517,7 +517,7 @@ function handleAddModelForm(event) {
     renderConfiguredModelsTable();
     renderUnconfiguredModels();
 
-    showToast(`Added "${modelName}" to configuration`);
+    showToast(i18n.t('added') + ' "' + modelName + '"');
 }
 
 /**
@@ -581,7 +581,7 @@ async function handleSave() {
         renderConfiguredModelsTable();
         renderUnconfiguredModels();
 
-        showToast('Configuration saved successfully');
+        showToast(i18n.t('configSaved'));
 
     } catch (error) {
         console.error('Failed to save configuration:', error);
@@ -613,7 +613,7 @@ async function initSettings() {
     try {
         // Show loading state
         clearElement(tbody);
-        tbody.appendChild(createEmptyTableRow('Loading...', 4));
+        tbody.appendChild(createEmptyTableRow(i18n.t('loading'), 4));
 
         // Fetch price configuration
         priceConfig = await fetchPrices();
@@ -652,7 +652,7 @@ async function initSettings() {
 
         clearElement(tbody);
         tbody.appendChild(createEmptyTableRow(
-            'Error loading configuration: ' + error.message,
+            i18n.t('errorLoading') + error.message,
             4
         ));
 
@@ -664,6 +664,17 @@ async function initSettings() {
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize page
     initSettings();
+
+    // Set up language toggle
+    const langToggle = document.getElementById('lang-toggle');
+    if (langToggle) {
+        langToggle.addEventListener('click', () => {
+            i18n.toggleLang();
+            // Re-render tables with new language
+            renderConfiguredModelsTable();
+            renderUnconfiguredModels();
+        });
+    }
 
     // Set up event listeners
     const addForm = document.getElementById('add-model-form');

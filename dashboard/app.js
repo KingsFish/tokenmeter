@@ -4,151 +4,6 @@
  */
 
 // =============================================================================
-// INTERNATIONALIZATION (i18n)
-// =============================================================================
-
-const i18n = {
-    currentLang: 'zh',
-    translations: {
-        zh: {
-            brandSub: '// 用量监控控制台 v2.0',
-            systemActive: '系统运行中',
-            config: '[配置]',
-            filter: '筛选',
-            all: '全部',
-            selectRange: '选择范围',
-            days7: '7天',
-            days30: '30天',
-            allTime: '全部时间',
-            customRange: '自定义范围',
-            apply: '应用',
-            allModels: '全部模型',
-            searchProject: '搜索项目...',
-            reset: '重置',
-            totalTokens: '总Token数',
-            input: '输入',
-            output: '输出',
-            totalTurns: '总轮次',
-            estCost: '预估费用',
-            sessions: '会话数',
-            timeline: '时间线',
-            projectDist: '[项目分布]',
-            modelDist: '[模型分布]',
-            last20: '最近20条',
-            timestamp: '时间戳',
-            project: '项目',
-            model: '模型',
-            tokens: 'Token数',
-            cost: '费用',
-            turns: '轮次',
-            sysAlert: '系统警告: 未配置模型',
-            warningMsg: '价格配置不完整，预估值可能使用默认价格。',
-            runConfig: '[运行配置]',
-            usageTracker: 'Claude Code 用量追踪器',
-            // Chart labels
-            chartInput: '输入',
-            chartOutput: '输出',
-            chartOther: '其他',
-            noData: '无数据',
-            loading: '加载中...',
-            noSessions: '未找到会话',
-            from: '从',
-            to: '到'
-        },
-        en: {
-            brandSub: '// USAGE MONITORING CONSOLE v2.0',
-            systemActive: 'SYSTEM ACTIVE',
-            config: '[CFG]',
-            filter: 'FILTER',
-            all: 'ALL',
-            selectRange: 'SELECT_RANGE',
-            days7: '7_DAYS',
-            days30: '30_DAYS',
-            allTime: 'ALL_TIME',
-            customRange: 'CUSTOM_RANGE',
-            apply: 'APPLY',
-            allModels: 'All Models',
-            searchProject: 'grep...',
-            reset: 'RESET',
-            totalTokens: 'TOTAL_TOKENS',
-            input: 'IN',
-            output: 'OUT',
-            totalTurns: 'TOTAL_TURNS',
-            estCost: 'EST_COST',
-            sessions: 'SESSIONS',
-            timeline: 'TIMELINE',
-            projectDist: '[PROJECT_DIST]',
-            modelDist: '[MODEL_DIST]',
-            last20: 'LAST_20',
-            timestamp: 'TIMESTAMP',
-            project: 'PROJECT',
-            model: 'MODEL',
-            tokens: 'TOKENS',
-            cost: 'COST',
-            turns: 'TURNS',
-            sysAlert: 'SYS_ALERT: UNCONFIGURED_MODELS',
-            warningMsg: 'Pricing config incomplete. Estimates may use defaults.',
-            runConfig: '[RUN_CONFIG]',
-            usageTracker: 'CLAUDE CODE USAGE TRACKER',
-            chartInput: 'INPUT',
-            chartOutput: 'OUTPUT',
-            chartOther: 'OTHER',
-            noData: 'NO_DATA',
-            loading: 'LOADING...',
-            noSessions: 'NO_SESSIONS_FOUND',
-            from: 'FROM',
-            to: 'TO'
-        }
-    },
-
-    t(key) {
-        return this.translations[this.currentLang][key] || key;
-    },
-
-    setLang(lang) {
-        this.currentLang = lang;
-        localStorage.setItem('tokenmeter-lang', lang);
-        this.updateUI();
-    },
-
-    toggleLang() {
-        this.setLang(this.currentLang === 'zh' ? 'en' : 'zh');
-    },
-
-    updateUI() {
-        // Update lang label
-        const langLabel = document.getElementById('lang-label');
-        if (langLabel) {
-            langLabel.textContent = this.currentLang === 'zh' ? 'EN' : '中文';
-        }
-
-        // Update all elements with data-i18n attribute
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (this.translations[this.currentLang][key]) {
-                el.textContent = this.translations[this.currentLang][key];
-            }
-        });
-
-        // Update placeholders
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-            const key = el.getAttribute('data-i18n-placeholder');
-            if (this.translations[this.currentLang][key]) {
-                el.placeholder = this.translations[this.currentLang][key];
-            }
-        });
-    },
-
-    init() {
-        const saved = localStorage.getItem('tokenmeter-lang');
-        if (saved && this.translations[saved]) {
-            this.currentLang = saved;
-        }
-        this.updateUI();
-    }
-};
-
-// =============================================================================
 // FILTER STATE MANAGEMENT
 // =============================================================================
 
@@ -976,17 +831,18 @@ async function initDashboard() {
 
 // Start on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize i18n first
-    i18n.init();
-
     // Set up language toggle
     const langToggle = document.getElementById('lang-toggle');
     if (langToggle) {
         langToggle.addEventListener('click', () => {
             i18n.toggleLang();
-            initDashboard(); // Refresh charts with new labels
         });
     }
+
+    // Listen for language changes to refresh charts
+    window.addEventListener('langChanged', () => {
+        initDashboard();
+    });
 
     initFilterListeners();
     initDashboard();

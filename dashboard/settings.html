@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TokenMeter // Config Console</title>
+    <title>TokenMeter // 配置控制台</title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* Settings-specific overrides */
@@ -41,6 +41,7 @@
         }
 
         .config-title {
+            flex: 1;
             font-family: var(--font-display);
             font-size: 1.25rem;
             font-weight: 700;
@@ -344,27 +345,30 @@
                     <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
             </a>
-            <h1 class="config-title">PRICE <span class="accent">CONFIG</span></h1>
+            <h1 class="config-title"><span data-i18n="priceConfig">价格配置</span></h1>
+            <button class="lang-toggle" id="lang-toggle" data-i18n-title="toggleLang" title="切换语言">
+                <span class="lang-label" id="lang-label">EN</span>
+            </button>
         </header>
 
         <!-- Configured Models -->
         <section class="config-section">
             <div class="section-header">
-                <span class="section-tag">[CONFIGURED_MODELS]</span>
+                <span class="section-tag" data-i18n="configuredModels">[已配置模型]</span>
             </div>
-            <p class="section-desc">Edit prices directly in the table. Click SAVE_ALL to apply changes.</p>
+            <p class="section-desc" data-i18n="configuredModelsDesc">直接在表格中编辑价格，点击保存全部以应用更改。</p>
             <div class="config-table-wrapper">
                 <table class="config-table">
                     <thead>
                         <tr>
-                            <th>MODEL</th>
-                            <th>INPUT $/M</th>
-                            <th>OUTPUT $/M</th>
-                            <th>ACTION</th>
+                            <th data-i18n="modelName">模型名称</th>
+                            <th data-i18n="inputPrice">输入价格 ($/M)</th>
+                            <th data-i18n="outputPrice">输出价格 ($/M)</th>
+                            <th data-i18n="action">操作</th>
                         </tr>
                     </thead>
                     <tbody id="models-table-body">
-                        <tr><td colspan="4" class="empty-state">LOADING...</td></tr>
+                        <tr><td colspan="4" class="empty-state" data-i18n="loading">加载中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -373,50 +377,51 @@
         <!-- Add Model -->
         <section class="config-section">
             <div class="section-header">
-                <span class="section-tag">[ADD_MODEL]</span>
+                <span class="section-tag" data-i18n="addModel">[添加模型]</span>
             </div>
+            <p class="section-desc" data-i18n="addModelDesc">手动添加模型并设置价格。</p>
             <form class="add-form" id="add-model-form">
                 <div class="form-field">
-                    <label class="form-label">MODEL_NAME</label>
+                    <label class="form-label" data-i18n="modelName">模型名称</label>
                     <input type="text" class="form-input" id="new-model-name" placeholder="claude-3-opus" required>
                 </div>
                 <div class="form-field">
-                    <label class="form-label">INPUT $/M</label>
+                    <label class="form-label" data-i18n="inputPrice">输入价格 ($/M)</label>
                     <input type="number" class="form-input" id="new-input-price" placeholder="15.00" step="0.01" min="0" required>
                 </div>
                 <div class="form-field">
-                    <label class="form-label">OUTPUT $/M</label>
+                    <label class="form-label" data-i18n="outputPrice">输出价格 ($/M)</label>
                     <input type="number" class="form-input" id="new-output-price" placeholder="75.00" step="0.01" min="0" required>
                 </div>
-                <button type="submit" class="btn-cyber btn-cyber--primary">ADD</button>
+                <button type="submit" class="btn-cyber btn-cyber--primary" data-i18n="add">添加</button>
             </form>
         </section>
 
         <!-- Unconfigured Models -->
         <section class="config-section">
             <div class="section-header">
-                <span class="section-tag">[DETECTED_MODELS]</span>
-                <span class="section-dim">UNCONFIGURED</span>
+                <span class="section-tag" data-i18n="detectedModels">[检测到的模型]</span>
+                <span class="section-dim" data-i18n="unconfigured">未配置</span>
             </div>
-            <p class="section-desc">Models found in usage data without pricing. Click ADD to use default prices.</p>
+            <p class="section-desc" data-i18n="detectedModelsDesc">在用量数据中发现但未配置价格的模型，点击添加使用默认价格。</p>
             <div class="unconfigured-list" id="unconfigured-models">
-                <div class="empty-state">LOADING...</div>
+                <div class="empty-state" data-i18n="loading">加载中...</div>
             </div>
         </section>
 
         <!-- Default Prices -->
         <section class="config-section">
             <div class="section-header">
-                <span class="section-tag">[DEFAULT_PRICES]</span>
+                <span class="section-tag" data-i18n="defaultPrices">[默认价格]</span>
             </div>
-            <p class="section-desc">Fallback prices for models without specific configuration.</p>
+            <p class="section-desc" data-i18n="defaultPricesDesc">用于未单独配置价格的模型的默认价格。</p>
             <div class="default-price-grid">
                 <div class="form-field">
-                    <label class="form-label">DEFAULT_INPUT $/M</label>
+                    <label class="form-label" data-i18n="defaultInput">默认输入价格 ($/M)</label>
                     <input type="number" class="form-input" id="default-input-price" step="0.01" min="0">
                 </div>
                 <div class="form-field">
-                    <label class="form-label">DEFAULT_OUTPUT $/M</label>
+                    <label class="form-label" data-i18n="defaultOutput">默认输出价格 ($/M)</label>
                     <input type="number" class="form-input" id="default-output-price" step="0.01" min="0">
                 </div>
             </div>
@@ -424,19 +429,20 @@
 
         <!-- Actions -->
         <div class="config-actions">
-            <button type="button" class="btn-cyber btn-cyber--lg" id="cancel-btn">CANCEL</button>
-            <button type="button" class="btn-cyber btn-cyber--primary btn-cyber--lg" id="save-btn">SAVE_ALL</button>
+            <button type="button" class="btn-cyber btn-cyber--lg" id="cancel-btn" data-i18n="cancel">取消</button>
+            <button type="button" class="btn-cyber btn-cyber--primary btn-cyber--lg" id="save-btn" data-i18n="saveAll">保存全部</button>
         </div>
 
         <!-- Info -->
         <div class="info-box">
             <p class="info-box__text">
-                Prices are per million tokens (1M = 1,000,000).
-                Config saved to <code class="info-box__code">~/.claude/tokenmeter/prices.json</code>
+                <span data-i18n="aboutConfigDesc">价格按每百万 Token 计算 (1M = 1,000,000 Token)。配置保存至</span>
+                <code class="info-box__code">~/.claude/tokenmeter/prices.json</code>
             </p>
         </div>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="settings.js"></script>
 </body>
 </html>
