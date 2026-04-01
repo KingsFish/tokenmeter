@@ -55,19 +55,52 @@ if [[ -z "${TOKENMETER_DIR:-}" ]]; then
 fi
 
 # Parse port from arguments if provided
+PORT=8765
 if [ -n "$ARGUMENTS" ]; then
-  # Extract first argument as port number
   PORT=$(echo "$ARGUMENTS" | awk '{print $1}')
-  # Validate it's a number
-  if echo "$PORT" | grep -qE '^[0-9]+$'; then
-    export PORT
-  else
+  if ! echo "$PORT" | grep -qE '^[0-9]+$'; then
     echo "Error: Invalid port number '$PORT'"
     echo "Usage: /usage-dashboard [port]"
     exit 1
   fi
 fi
 
-# Start the dashboard using absolute path
-exec "${TOKENMETER_DIR}/scripts/start-dashboard.sh"
+# Start dashboard server in background
+export PORT
+"${TOKENMETER_DIR}/scripts/dashboard-server.py" &
+SERVER_PID=$!
+
+# Wait for server to start
+sleep 1
+
+# Check if server is running
+if ! kill -0 $SERVER_PID 2>/dev/null; then
+  echo "Error: Failed to start dashboard server"
+  exit 1
+fi
+
+# Open browser
+URL="http://localhost:${PORT}"
+echo "Dashboard running at: ${URL}"
+if command -v open &>/dev/null; then
+  open "$URL" 2>/dev/null
+elif command -v xdg-open &>/dev/null; then
+  xdg-open "$URL" 2>/dev/null
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo " Dashboard server running (PID: ${SERVER_PID})"
+echo " Press Enter or type 'stop' to close the server"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Wait for user input
+read -r USER_INPUT
+
+# Stop the server
+kill $SERVER_PID 2>/dev/null
+wait $SERVER_PID 2>/dev/null
+
+echo "Dashboard server stopped."
 `
