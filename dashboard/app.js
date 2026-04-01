@@ -1,34 +1,28 @@
-// Claude Code Usage Tracker - Dashboard App
-// Implements data fetching, charts, and rendering for the usage tracker dashboard
-
-// =============================================================================
-// Filter State Management
-// =============================================================================
-
 /**
- * Filter state object
+ * TokenMeter // Cyberpunk Terminal Dashboard
+ * Data monitoring console with real-time visualization
  */
+
+// =============================================================================
+// FILTER STATE MANAGEMENT
+// =============================================================================
+
 const filterState = {
-    last: '',       // '7', '30', or '' for all
-    from: '',       // YYYY-MM-DD
-    to: '',         // YYYY-MM-DD
-    model: '',      // model name
-    project: ''     // project name (partial match)
+    last: '',
+    from: '',
+    to: '',
+    model: '',
+    project: ''
 };
 
-/**
- * Available models (populated from API data)
- */
 let availableModels = [];
 
 /**
- * Build API URL with filter parameters
- * @returns {string} API URL with query params
+ * Build API URL with current filter state
  */
 function buildApiUrl() {
     const params = new URLSearchParams();
 
-    // Priority: custom date range > quick date > no date filter
     if (filterState.from || filterState.to) {
         if (filterState.from) params.set('from', filterState.from);
         if (filterState.to) params.set('to', filterState.to);
@@ -39,12 +33,11 @@ function buildApiUrl() {
     if (filterState.model) params.set('model', filterState.model);
     if (filterState.project) params.set('project', filterState.project);
 
-    const queryString = params.toString();
-    return queryString ? `/api/usage?${queryString}` : '/api/usage';
+    return params.toString() ? `/api/usage?${params.toString()}` : '/api/usage';
 }
 
 /**
- * Reset all filters to default state
+ * Reset all filters to default
  */
 function resetFilters() {
     filterState.last = '';
@@ -54,66 +47,42 @@ function resetFilters() {
     filterState.project = '';
 
     // Reset UI
-    document.querySelectorAll('.filter-bar__btn[data-last]').forEach(btn => {
-        btn.dataset.active = btn.dataset.last === '' ? 'true' : 'false';
+    document.querySelectorAll('.date-preset').forEach(btn => {
+        btn.classList.remove('date-preset--active');
+        if (btn.dataset.last === '') {
+            btn.classList.add('date-preset--active');
+        }
     });
     document.getElementById('filter-from').value = '';
     document.getElementById('filter-to').value = '';
     document.getElementById('filter-model').value = '';
     document.getElementById('filter-project').value = '';
 
-    // Reload data
+    // Reset display
+    const dateDisplay = document.getElementById('date-display');
+    if (dateDisplay) {
+        dateDisplay.textContent = 'ALL';
+    }
+
     initDashboard();
 }
 
 /**
- * Update filter state from UI
- */
-function updateFiltersFromUI() {
-    // Get quick date buttons state
-    const activeBtn = document.querySelector('.filter-bar__btn[data-active="true"]');
-    if (activeBtn && !filterState.from && !filterState.to) {
-        filterState.last = activeBtn.dataset.last;
-    }
-
-    // Get custom date inputs
-    const fromInput = document.getElementById('filter-from');
-    const toInput = document.getElementById('filter-to');
-    filterState.from = fromInput ? fromInput.value : '';
-    filterState.to = toInput ? toInput.value : '';
-
-    // If custom dates set, clear quick date
-    if (filterState.from || filterState.to) {
-        filterState.last = '';
-    }
-
-    // Get model select
-    const modelSelect = document.getElementById('filter-model');
-    filterState.model = modelSelect ? modelSelect.value : '';
-
-    // Get project input
-    const projectInput = document.getElementById('filter-project');
-    filterState.project = projectInput ? projectInput.value.trim() : '';
-}
-
-/**
- * Populate model dropdown from available models
+ * Populate model dropdown
  */
 function populateModelDropdown() {
-    const modelSelect = document.getElementById('filter-model');
-    if (!modelSelect) return;
+    const select = document.getElementById('filter-model');
+    if (!select) return;
 
-    // Clear existing options except "All Models"
-    while (modelSelect.options.length > 1) {
-        modelSelect.remove(1);
+    while (select.options.length > 1) {
+        select.remove(1);
     }
 
-    // Add available models
     availableModels.forEach(model => {
-        const option = document.createElement('option');
-        option.value = model;
-        option.textContent = model;
-        modelSelect.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = model;
+        opt.textContent = model;
+        select.appendChild(opt);
     });
 }
 
@@ -121,47 +90,96 @@ function populateModelDropdown() {
  * Initialize filter UI event listeners
  */
 function initFilterListeners() {
-    // Quick date buttons
-    document.querySelectorAll('.filter-bar__btn[data-last]').forEach(btn => {
+    // Date selector trigger
+    const dateTrigger = document.getElementById('date-trigger');
+    const datePanel = document.getElementById('date-panel');
+    const dateDisplay = document.getElementById('date-display');
+
+    if (dateTrigger && datePanel) {
+        // Toggle panel
+        dateTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = datePanel.classList.contains('open');
+            datePanel.classList.toggle('open');
+            dateTrigger.classList.toggle('active');
+        });
+
+        // Close on outside click
+        document.addEventListener('click', () => {
+            datePanel.classList.remove('open');
+            dateTrigger.classList.remove('active');
+        });
+
+        datePanel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    // Preset buttons (7D, 30D, ALL)
+    document.querySelectorAll('.date-preset').forEach(btn => {
         btn.addEventListener('click', () => {
-            // Clear custom dates when clicking quick buttons
+            // Clear custom inputs
             document.getElementById('filter-from').value = '';
             document.getElementById('filter-to').value = '';
             filterState.from = '';
             filterState.to = '';
 
             // Update active state
-            document.querySelectorAll('.filter-bar__btn[data-last]').forEach(b => {
-                b.dataset.active = 'false';
+            document.querySelectorAll('.date-preset').forEach(b => {
+                b.classList.remove('date-preset--active');
             });
-            btn.dataset.active = 'true';
+            btn.classList.add('date-preset--active');
+
             filterState.last = btn.dataset.last;
+
+            // Update display
+            if (dateDisplay) {
+                const labels = { '7': '7_DAYS', '30': '30_DAYS', '': 'ALL' };
+                dateDisplay.textContent = labels[filterState.last] || 'ALL';
+            }
+
+            // Close panel
+            datePanel?.classList.remove('open');
+            dateTrigger?.classList.remove('active');
 
             initDashboard();
         });
     });
 
-    // Custom date inputs
-    const fromInput = document.getElementById('filter-from');
-    const toInput = document.getElementById('filter-to');
+    // Apply custom range
+    const applyBtn = document.getElementById('date-apply');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+            const fromInput = document.getElementById('filter-from');
+            const toInput = document.getElementById('filter-to');
 
-    if (fromInput) {
-        fromInput.addEventListener('change', () => {
-            // Deactivate quick buttons when custom date set
-            document.querySelectorAll('.filter-bar__btn[data-last]').forEach(btn => {
-                btn.dataset.active = 'false';
-            });
-            updateFiltersFromUI();
-            initDashboard();
-        });
-    }
+            filterState.from = fromInput?.value || '';
+            filterState.to = toInput?.value || '';
 
-    if (toInput) {
-        toInput.addEventListener('change', () => {
-            document.querySelectorAll('.filter-bar__btn[data-last]').forEach(btn => {
-                btn.dataset.active = 'false';
-            });
-            updateFiltersFromUI();
+            if (filterState.from || filterState.to) {
+                filterState.last = '';
+
+                // Clear preset active state
+                document.querySelectorAll('.date-preset').forEach(b => {
+                    b.classList.remove('date-preset--active');
+                });
+
+                // Update display
+                if (dateDisplay) {
+                    if (filterState.from && filterState.to) {
+                        dateDisplay.textContent = `${filterState.from} → ${filterState.to}`;
+                    } else if (filterState.from) {
+                        dateDisplay.textContent = `FROM ${filterState.from}`;
+                    } else {
+                        dateDisplay.textContent = `TO ${filterState.to}`;
+                    }
+                }
+            }
+
+            // Close panel
+            datePanel?.classList.remove('open');
+            dateTrigger?.classList.remove('active');
+
             initDashboard();
         });
     }
@@ -170,19 +188,19 @@ function initFilterListeners() {
     const modelSelect = document.getElementById('filter-model');
     if (modelSelect) {
         modelSelect.addEventListener('change', () => {
-            updateFiltersFromUI();
+            filterState.model = modelSelect.value;
             initDashboard();
         });
     }
 
-    // Project input (with debounce)
+    // Project input with debounce
     const projectInput = document.getElementById('filter-project');
     if (projectInput) {
         let debounceTimer;
         projectInput.addEventListener('input', () => {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
-                updateFiltersFromUI();
+                filterState.project = projectInput.value.trim();
                 initDashboard();
             }, 300);
         });
@@ -196,13 +214,11 @@ function initFilterListeners() {
 }
 
 // =============================================================================
-// Utility Functions
+// UTILITY FUNCTIONS
 // =============================================================================
 
 /**
- * Format a number with K/M suffix
- * @param {number} num - The number to format
- * @returns {string} Formatted string (e.g., "12.9M", "500K")
+ * Format number with K/M suffix
  */
 function formatTokens(num) {
     if (num === null || num === undefined) return '0';
@@ -216,105 +232,75 @@ function formatTokens(num) {
 }
 
 /**
- * Format a cost as USD currency
- * @param {number} num - The cost in dollars
- * @returns {string} Formatted string (e.g., "$1.23", "N/A")
+ * Format cost as USD
  */
 function formatCost(num) {
     if (num === null || num === undefined) return 'N/A';
-    return '$' + num.toFixed(2);
+    return num.toFixed(2);
 }
 
 /**
- * Format an ISO date string to YYYY-MM-DD HH:MM
- * @param {string} isoString - ISO date string
- * @returns {string} Formatted date string
+ * Format ISO date to YYYY-MM-DD HH:MM
  */
 function formatDate(isoString) {
     if (!isoString) return '--';
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
+    const d = new Date(isoString);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
 /**
- * Format an ISO date string to just the date part (YYYY-MM-DD)
- * @param {string} isoString - ISO date string
- * @returns {string} Formatted date string
+ * Format date only (YYYY-MM-DD)
  */
 function formatDateOnly(isoString) {
     if (!isoString) return '--';
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const d = new Date(isoString);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 // =============================================================================
-// Data Fetching Functions
+// DATA FETCHING
 // =============================================================================
 
-/**
- * Fetch usage data from the API with filter parameters
- * @returns {Promise<Object>} Usage data object
- */
 async function fetchUsage() {
-    const url = buildApiUrl();
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Failed to fetch usage data: ${response.status}`);
-    }
+    const response = await fetch(buildApiUrl());
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return response.json();
 }
 
-/**
- * Fetch price configuration from the API
- * @returns {Promise<Object>} Price configuration object
- */
 async function fetchPrices() {
     const response = await fetch('/api/prices');
-    if (!response.ok) {
-        throw new Error(`Failed to fetch prices: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return response.json();
 }
 
 // =============================================================================
-// UI Helper Functions
+// UI RENDERING
 // =============================================================================
 
 /**
- * Show loading state with visual indicator
+ * Show loading state
  */
 function showLoading() {
-    const tokensEl = document.getElementById('total-tokens');
-    const turnsEl = document.getElementById('total-turns');
-    const costEl = document.getElementById('total-cost');
-    const sessionsEl = document.getElementById('total-sessions');
+    const metrics = ['total-tokens', 'total-turns', 'total-cost', 'total-sessions'];
+    metrics.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            const numEl = el.querySelector('.metric-number');
+            if (numEl) {
+                numEl.textContent = '---';
+                numEl.classList.add('loading-pulse');
+            }
+        }
+    });
 
-    // Clear and show loading indicators
-    if (tokensEl) {
-        tokensEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
-    }
-    if (turnsEl) {
-        turnsEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
-    }
-    if (costEl) {
-        costEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
-    }
-    if (sessionsEl) {
-        sessionsEl.innerHTML = '<span class="loading-indicator">Loading...</span>';
-    }
+    const inputEl = document.getElementById('input-tokens');
+    const outputEl = document.getElementById('output-tokens');
+    if (inputEl) inputEl.textContent = '---';
+    if (outputEl) outputEl.textContent = '---';
 
-    // Show loading state in sessions table
     const tbody = document.getElementById('sessions-body');
     if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">Loading...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="log-loading">LOADING...</td></tr>';
     }
 }
 
@@ -322,180 +308,111 @@ function showLoading() {
  * Show empty data message
  */
 function showEmptyData() {
-    const tokensEl = document.getElementById('total-tokens');
-    const turnsEl = document.getElementById('total-turns');
-    const costEl = document.getElementById('total-cost');
-    const sessionsEl = document.getElementById('total-sessions');
+    const metrics = ['total-tokens', 'total-turns', 'total-cost', 'total-sessions'];
+    metrics.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            const numEl = el.querySelector('.metric-number');
+            if (numEl) {
+                numEl.textContent = '0';
+                numEl.classList.remove('loading-pulse');
+            }
+        }
+    });
 
-    if (tokensEl) tokensEl.textContent = '0';
-    if (turnsEl) turnsEl.textContent = '0';
-    if (costEl) costEl.textContent = '$0.00';
-    if (sessionsEl) sessionsEl.textContent = '0';
+    const inputEl = document.getElementById('input-tokens');
+    const outputEl = document.getElementById('output-tokens');
+    if (inputEl) inputEl.textContent = '0';
+    if (outputEl) outputEl.textContent = '0';
 
-    // Show empty message in sessions table
     const tbody = document.getElementById('sessions-body');
     if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">No usage data found</td></tr>';
-    }
-
-    // Show a message card
-    const container = document.querySelector('.container');
-    const existingEmptyMsg = document.querySelector('.empty-data-card');
-    if (!existingEmptyMsg) {
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'card empty-data-card';
-        emptyDiv.innerHTML = `
-            <div style="text-align: center; padding: 2rem;">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" style="margin-bottom: 1rem;">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <h3 style="color: var(--text-secondary); margin-bottom: 0.5rem;">No Usage Data Found</h3>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">
-                    No Claude Code transcript files were found in ~/.claude/projects/
-                </p>
-            </div>
-        `;
-        container.insertBefore(emptyDiv, container.querySelector('.summary-cards').nextSibling);
+        tbody.innerHTML = '<tr><td colspan="6" class="log-empty">NO_DATA_FOUND</td></tr>';
     }
 }
 
 /**
- * Show error message
- * @param {string} message - Error message to display
- */
-function showError(message) {
-    const container = document.querySelector('.container');
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'card warning-card';
-
-    // Icon container
-    const iconDiv = document.createElement('div');
-    iconDiv.className = 'warning-card__icon';
-    const iconSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    iconSvg.setAttribute('width', '24');
-    iconSvg.setAttribute('height', '24');
-    iconSvg.setAttribute('viewBox', '0 0 24 24');
-    iconSvg.setAttribute('fill', 'none');
-    iconSvg.setAttribute('stroke', 'currentColor');
-    iconSvg.setAttribute('stroke-width', '2');
-
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', '12');
-    circle.setAttribute('cy', '12');
-    circle.setAttribute('r', '10');
-
-    const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line1.setAttribute('x1', '12');
-    line1.setAttribute('y1', '8');
-    line1.setAttribute('x2', '12');
-    line1.setAttribute('y2', '12');
-
-    const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line2.setAttribute('x1', '12');
-    line2.setAttribute('y1', '16');
-    line2.setAttribute('x2', '12.01');
-    line2.setAttribute('y2', '16');
-
-    iconSvg.appendChild(circle);
-    iconSvg.appendChild(line1);
-    iconSvg.appendChild(line2);
-    iconDiv.appendChild(iconSvg);
-    errorDiv.appendChild(iconDiv);
-
-    // Content container
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'warning-card__content';
-
-    const title = document.createElement('h3');
-    title.className = 'warning-card__title';
-    title.textContent = 'Error Loading Data';
-
-    const msgP = document.createElement('p');
-    msgP.className = 'warning-card__message';
-    msgP.textContent = message;
-
-    contentDiv.appendChild(title);
-    contentDiv.appendChild(msgP);
-    errorDiv.appendChild(contentDiv);
-
-    container.insertBefore(errorDiv, container.firstChild.nextSibling);
-    console.error('Dashboard error:', message);
-}
-
-// =============================================================================
-// Summary Cards Rendering
-// =============================================================================
-
-/**
- * Render summary cards
- * @param {Object} summary - Summary data from API
+ * Render summary metrics
  */
 function renderSummary(summary) {
     const totalTokens = summary.total_input_tokens + summary.total_output_tokens;
-    document.getElementById('total-tokens').textContent = formatTokens(totalTokens);
-    document.getElementById('total-turns').textContent = summary.total_turns.toLocaleString();
-    document.getElementById('total-cost').textContent = formatCost(summary.total_estimated_cost_usd);
-    document.getElementById('total-sessions').textContent = summary.total_sessions.toLocaleString();
+
+    // Total tokens
+    const tokensEl = document.getElementById('total-tokens');
+    if (tokensEl) {
+        const numEl = tokensEl.querySelector('.metric-number');
+        if (numEl) {
+            numEl.textContent = formatTokens(totalTokens);
+            numEl.classList.remove('loading-pulse');
+        }
+    }
+
+    // Token breakdown
+    const inputEl = document.getElementById('input-tokens');
+    const outputEl = document.getElementById('output-tokens');
+    if (inputEl) inputEl.textContent = formatTokens(summary.total_input_tokens);
+    if (outputEl) outputEl.textContent = formatTokens(summary.total_output_tokens);
+
+    // Turns
+    const turnsEl = document.getElementById('total-turns');
+    if (turnsEl) {
+        const numEl = turnsEl.querySelector('.metric-number');
+        if (numEl) {
+            numEl.textContent = summary.total_turns.toLocaleString();
+            numEl.classList.remove('loading-pulse');
+        }
+    }
+
+    // Cost
+    const costEl = document.getElementById('total-cost');
+    if (costEl) {
+        const numEl = costEl.querySelector('.metric-number');
+        if (numEl) {
+            numEl.textContent = formatCost(summary.total_estimated_cost_usd);
+            numEl.classList.remove('loading-pulse');
+        }
+    }
+
+    // Sessions
+    const sessionsEl = document.getElementById('total-sessions');
+    if (sessionsEl) {
+        const numEl = sessionsEl.querySelector('.metric-number');
+        if (numEl) {
+            numEl.textContent = summary.total_sessions.toLocaleString();
+            numEl.classList.remove('loading-pulse');
+        }
+    }
 }
 
 // =============================================================================
-// Charts Rendering
+// CHART RENDERING (Cyberpunk Theme)
 // =============================================================================
 
-// Chart color palettes
-const CHART_COLORS = {
-    // Primary colors for tokens chart
-    inputTokens: '#4f46e5',   // Indigo
-    outputTokens: '#10b981',  // Green
-
-    // Palette for pie charts
-    palette: [
-        '#4f46e5', // Indigo
-        '#10b981', // Green
-        '#f59e0b', // Amber
-        '#ef4444', // Red
-        '#8b5cf6', // Purple
-        '#06b6d4', // Cyan
-        '#f97316', // Orange
-        '#ec4899', // Pink
-        '#84cc16', // Lime
-        '#6366f1', // Violet
-    ]
+const CHART_THEME = {
+    cyan: '#00ffd5',
+    green: '#00ff88',
+    blue: '#00a8ff',
+    purple: '#a855f7',
+    amber: '#ff6b00',
+    red: '#ff2d55',
+    palette: ['#00ffd5', '#00ff88', '#00a8ff', '#a855f7', '#ff6b00', '#ff2d55', '#84cc16', '#f97316', '#06b6d4', '#ec4899'],
+    gridColor: 'rgba(0, 255, 213, 0.1)',
+    textColor: '#5a7a8a'
 };
 
-// Store chart instances for cleanup
 let tokensChart = null;
 let projectChart = null;
 let modelChart = null;
 
-/**
- * Check if Chart.js is available
- * @returns {boolean} True if Chart.js is loaded
- */
 function isChartJsAvailable() {
     return typeof Chart !== 'undefined';
 }
 
-/**
- * Show chart unavailable message
- */
-function showChartUnavailableMessage() {
-    const chartContainers = document.querySelectorAll('.chart-container');
-    chartContainers.forEach(container => {
-        container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); text-align: center;"><p>Chart.js unavailable. Please check your network connection.</p></div>';
-    });
-}
-
-/**
- * Render all charts
- * @param {Object} data - Full data object from API
- */
 function renderCharts(data) {
     if (!isChartJsAvailable()) {
-        console.warn('Chart.js is not available, skipping chart rendering');
-        showChartUnavailableMessage();
+        document.querySelectorAll('.chart-frame').forEach(frame => {
+            frame.innerHTML = '<div class="chart-unavailable">CHART_JS_UNAVAILABLE</div>';
+        });
         return;
     }
     renderTokensChart(data.sessions);
@@ -504,99 +421,99 @@ function renderCharts(data) {
 }
 
 /**
- * Render token usage over time chart (line chart)
- * @param {Array} sessions - Array of session objects
+ * Token flow timeline (line chart)
  */
 function renderTokensChart(sessions) {
     const ctx = document.getElementById('tokens-chart');
     if (!ctx) return;
 
-    // Destroy existing chart
-    if (tokensChart) {
-        tokensChart.destroy();
-    }
+    if (tokensChart) tokensChart.destroy();
 
-    // Group sessions by date
+    // Aggregate by date
     const dailyData = {};
-    sessions.forEach(session => {
-        const date = formatDateOnly(session.start_time);
-        if (!dailyData[date]) {
-            dailyData[date] = { input: 0, output: 0 };
-        }
-        dailyData[date].input += session.input_tokens;
-        dailyData[date].output += session.output_tokens;
+    sessions.forEach(s => {
+        const date = formatDateOnly(s.start_time);
+        if (!dailyData[date]) dailyData[date] = { input: 0, output: 0 };
+        dailyData[date].input += s.input_tokens;
+        dailyData[date].output += s.output_tokens;
     });
 
-    // Sort by date and prepare chart data
     const sortedDates = Object.keys(dailyData).sort();
     const labels = sortedDates;
-    const inputData = sortedDates.map(date => dailyData[date].input);
-    const outputData = sortedDates.map(date => dailyData[date].output);
+    const inputData = sortedDates.map(d => dailyData[d].input);
+    const outputData = sortedDates.map(d => dailyData[d].output);
 
     tokensChart = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
-            labels: labels,
+            labels,
             datasets: [
                 {
-                    label: 'Input Tokens',
+                    label: 'INPUT',
                     data: inputData,
-                    borderColor: CHART_COLORS.inputTokens,
-                    backgroundColor: CHART_COLORS.inputTokens + '20',
+                    borderColor: CHART_THEME.green,
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
                     fill: true,
-                    tension: 0.3,
+                    tension: 0.4,
                     pointRadius: 2,
-                    pointHoverRadius: 5
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: CHART_THEME.green,
+                    pointBorderColor: CHART_THEME.green
                 },
                 {
-                    label: 'Output Tokens',
+                    label: 'OUTPUT',
                     data: outputData,
-                    borderColor: CHART_COLORS.outputTokens,
-                    backgroundColor: CHART_COLORS.outputTokens + '20',
+                    borderColor: CHART_THEME.cyan,
+                    backgroundColor: 'rgba(0, 255, 213, 0.1)',
                     fill: true,
-                    tension: 0.3,
+                    tension: 0.4,
                     pointRadius: 2,
-                    pointHoverRadius: 5
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: CHART_THEME.cyan,
+                    pointBorderColor: CHART_THEME.cyan
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: {
                     position: 'top',
                     labels: {
+                        font: { family: "'JetBrains Mono'", size: 11 },
+                        color: CHART_THEME.textColor,
                         usePointStyle: true,
-                        padding: 20
+                        padding: 15
                     }
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(10, 14, 23, 0.9)',
+                    borderColor: CHART_THEME.cyan,
+                    borderWidth: 1,
+                    titleFont: { family: "'JetBrains Mono'" },
+                    bodyFont: { family: "'JetBrains Mono'" },
                     callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + formatTokens(context.raw);
-                        }
+                        label: ctx => `${ctx.dataset.label}: ${formatTokens(ctx.raw)}`
                     }
                 }
             },
             scales: {
                 x: {
-                    display: true,
-                    grid: {
-                        display: false
+                    grid: { color: CHART_THEME.gridColor, drawBorder: false },
+                    ticks: {
+                        font: { family: "'JetBrains Mono'", size: 10 },
+                        color: CHART_THEME.textColor
                     }
                 },
                 y: {
-                    display: true,
                     beginAtZero: true,
+                    grid: { color: CHART_THEME.gridColor, drawBorder: false },
                     ticks: {
-                        callback: function(value) {
-                            return formatTokens(value);
-                        }
+                        font: { family: "'JetBrains Mono'", size: 10 },
+                        color: CHART_THEME.textColor,
+                        callback: v => formatTokens(v)
                     }
                 }
             }
@@ -605,91 +522,82 @@ function renderTokensChart(sessions) {
 }
 
 /**
- * Render project distribution chart (pie chart)
- * @param {Object} byProject - Project data keyed by project name
+ * Project distribution (doughnut chart)
  */
 function renderProjectChart(byProject) {
     const ctx = document.getElementById('project-chart');
     if (!ctx) return;
 
-    // Destroy existing chart
-    if (projectChart) {
-        projectChart.destroy();
-    }
+    if (projectChart) projectChart.destroy();
 
-    // Handle empty data
     if (!byProject || Object.keys(byProject).length === 0) {
         projectChart = new Chart(ctx.getContext('2d'), {
-            type: 'pie',
+            type: 'doughnut',
             data: {
-                labels: ['No data'],
-                datasets: [{
-                    data: [1],
-                    backgroundColor: ['#e5e7eb']
-                }]
+                labels: ['NO_DATA'],
+                datasets: [{ data: [1], backgroundColor: ['rgba(90, 122, 138, 0.3)'] }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                }
+                plugins: { legend: { display: false } }
             }
         });
         return;
     }
 
-    // Sort projects by total tokens and prepare data
-    const sortedProjects = Object.entries(byProject)
-        .map(([name, data]) => ({
-            name,
-            tokens: data.input + data.output
-        }))
+    const sorted = Object.entries(byProject)
+        .map(([name, data]) => ({ name, tokens: data.input + data.output }))
         .sort((a, b) => b.tokens - a.tokens);
 
-    // Top 10 projects, rest grouped as "Other"
-    const TOP_N = 10;
+    const TOP_N = 8;
     let labels, data;
-
-    if (sortedProjects.length <= TOP_N) {
-        labels = sortedProjects.map(p => p.name);
-        data = sortedProjects.map(p => p.tokens);
+    if (sorted.length <= TOP_N) {
+        labels = sorted.map(p => p.name);
+        data = sorted.map(p => p.tokens);
     } else {
-        const topProjects = sortedProjects.slice(0, TOP_N);
-        const otherTokens = sortedProjects.slice(TOP_N).reduce((sum, p) => sum + p.tokens, 0);
-        labels = [...topProjects.map(p => p.name), 'Other'];
-        data = [...topProjects.map(p => p.tokens), otherTokens];
+        const top = sorted.slice(0, TOP_N);
+        const otherSum = sorted.slice(TOP_N).reduce((s, p) => s + p.tokens, 0);
+        labels = [...top.map(p => p.name), 'OTHER'];
+        data = [...top.map(p => p.tokens), otherSum];
     }
 
     projectChart = new Chart(ctx.getContext('2d'), {
-        type: 'pie',
+        type: 'doughnut',
         data: {
-            labels: labels,
+            labels,
             datasets: [{
-                data: data,
-                backgroundColor: CHART_COLORS.palette.slice(0, labels.length)
+                data,
+                backgroundColor: CHART_THEME.palette.slice(0, labels.length),
+                borderColor: 'rgba(10, 14, 23, 1)',
+                borderWidth: 2
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '60%',
             plugins: {
                 legend: {
                     position: 'right',
                     labels: {
+                        font: { family: "'JetBrains Mono'", size: 10 },
+                        color: CHART_THEME.textColor,
                         boxWidth: 12,
-                        padding: 8,
-                        font: {
-                            size: 11
-                        }
+                        padding: 8
                     }
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(10, 14, 23, 0.9)',
+                    borderColor: CHART_THEME.cyan,
+                    borderWidth: 1,
+                    titleFont: { family: "'JetBrains Mono'" },
+                    bodyFont: { family: "'JetBrains Mono'" },
                     callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.raw / total) * 100).toFixed(1);
-                            return `${context.label}: ${formatTokens(context.raw)} (${percentage}%)`;
+                        label: ctx => {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct = ((ctx.raw / total) * 100).toFixed(1);
+                            return `${ctx.label}: ${formatTokens(ctx.raw)} (${pct}%)`;
                         }
                     }
                 }
@@ -699,86 +607,74 @@ function renderProjectChart(byProject) {
 }
 
 /**
- * Render model distribution chart (pie chart)
- * @param {Object} byModel - Model data keyed by model name
+ * Model distribution (doughnut chart)
  */
 function renderModelChart(byModel) {
     const ctx = document.getElementById('model-chart');
     if (!ctx) return;
 
-    // Destroy existing chart
-    if (modelChart) {
-        modelChart.destroy();
-    }
+    if (modelChart) modelChart.destroy();
 
-    // Handle empty data
     if (!byModel || Object.keys(byModel).length === 0) {
         modelChart = new Chart(ctx.getContext('2d'), {
-            type: 'pie',
+            type: 'doughnut',
             data: {
-                labels: ['No data'],
-                datasets: [{
-                    data: [1],
-                    backgroundColor: ['#e5e7eb']
-                }]
+                labels: ['NO_DATA'],
+                datasets: [{ data: [1], backgroundColor: ['rgba(90, 122, 138, 0.3)'] }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                }
+                plugins: { legend: { display: false } }
             }
         });
         return;
     }
 
-    // Sort models by total tokens
-    const sortedModels = Object.entries(byModel)
-        .map(([name, data]) => ({
-            name,
-            tokens: data.input + data.output
-        }))
+    const sorted = Object.entries(byModel)
+        .map(([name, data]) => ({ name, tokens: data.input + data.output }))
         .sort((a, b) => b.tokens - a.tokens);
 
-    const labels = sortedModels.map(m => m.name);
-    const data = sortedModels.map(m => m.tokens);
-
-    // Generate colors for all models (extend palette if needed)
-    const colors = [];
-    for (let i = 0; i < labels.length; i++) {
-        colors.push(CHART_COLORS.palette[i % CHART_COLORS.palette.length]);
-    }
+    const labels = sorted.map(m => m.name);
+    const data = sorted.map(m => m.tokens);
+    const colors = labels.map((_, i) => CHART_THEME.palette[i % CHART_THEME.palette.length]);
 
     modelChart = new Chart(ctx.getContext('2d'), {
-        type: 'pie',
+        type: 'doughnut',
         data: {
-            labels: labels,
+            labels,
             datasets: [{
-                data: data,
-                backgroundColor: colors
+                data,
+                backgroundColor: colors,
+                borderColor: 'rgba(10, 14, 23, 1)',
+                borderWidth: 2
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '60%',
             plugins: {
                 legend: {
                     position: 'right',
                     labels: {
+                        font: { family: "'JetBrains Mono'", size: 10 },
+                        color: CHART_THEME.textColor,
                         boxWidth: 12,
-                        padding: 8,
-                        font: {
-                            size: 11
-                        }
+                        padding: 8
                     }
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(10, 14, 23, 0.9)',
+                    borderColor: CHART_THEME.cyan,
+                    borderWidth: 1,
+                    titleFont: { family: "'JetBrains Mono'" },
+                    bodyFont: { family: "'JetBrains Mono'" },
                     callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.raw / total) * 100).toFixed(1);
-                            return `${context.label}: ${formatTokens(context.raw)} (${percentage}%)`;
+                        label: ctx => {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct = ((ctx.raw / total) * 100).toFixed(1);
+                            return `${ctx.label}: ${formatTokens(ctx.raw)} (${pct}%)`;
                         }
                     }
                 }
@@ -788,170 +684,155 @@ function renderModelChart(byModel) {
 }
 
 // =============================================================================
-// Sessions Table Rendering
+// SESSION LOG TABLE
 // =============================================================================
 
-/**
- * Create a table cell with text content
- * @param {string} text - Text content
- * @param {string} [title] - Optional title attribute
- * @returns {HTMLElement} Table cell element
- */
-function createTableCell(text, title) {
-    const cell = document.createElement('td');
-    cell.textContent = text;
-    if (title) {
-        cell.setAttribute('title', title);
-    }
-    return cell;
-}
-
-/**
- * Render sessions table
- * @param {Array} sessions - Array of session objects
- */
 function renderSessionsTable(sessions) {
     const tbody = document.getElementById('sessions-body');
     if (!tbody) return;
 
-    // Clear existing rows
     tbody.textContent = '';
 
-    // Handle empty sessions
     if (!sessions || sessions.length === 0) {
         const row = document.createElement('tr');
         const cell = document.createElement('td');
         cell.setAttribute('colspan', '6');
-        cell.style.textAlign = 'center';
-        cell.style.color = 'var(--text-secondary)';
-        cell.textContent = 'No sessions found';
+        cell.className = 'log-empty';
+        cell.textContent = 'NO_SESSIONS_FOUND';
         row.appendChild(cell);
         tbody.appendChild(row);
         return;
     }
 
-    // Sort by date descending and take last 20
-    const sortedSessions = [...sessions]
+    // Sort descending, take last 20
+    const recent = [...sessions]
         .sort((a, b) => new Date(b.start_time) - new Date(a.start_time))
         .slice(0, 20);
 
-    // Create rows
-    sortedSessions.forEach(session => {
+    recent.forEach(session => {
         const row = document.createElement('tr');
-        const totalTokens = session.input_tokens + session.output_tokens;
 
-        // Date cell
-        row.appendChild(createTableCell(formatDate(session.start_time)));
+        // Timestamp
+        const tdTime = document.createElement('td');
+        tdTime.textContent = formatDate(session.start_time);
+        row.appendChild(tdTime);
 
-        // Project cell with tooltip
-        row.appendChild(createTableCell(
-            session.project_name || 'Unknown',
-            session.project_path || ''
-        ));
+        // Project
+        const tdProj = document.createElement('td');
+        tdProj.textContent = session.project_name || 'UNKNOWN';
+        tdProb.title = session.project_path || '';
+        row.appendChild(tdProj);
 
-        // Model cell
-        row.appendChild(createTableCell(session.model || 'Unknown'));
+        // Model
+        const tdModel = document.createElement('td');
+        tdModel.textContent = session.model || 'UNKNOWN';
+        row.appendChild(tdModel);
 
-        // Tokens cell
-        row.appendChild(createTableCell(formatTokens(totalTokens)));
+        // Tokens
+        const tdTokens = document.createElement('td');
+        tdTokens.textContent = formatTokens(session.input_tokens + session.output_tokens);
+        row.appendChild(tdTokens);
 
-        // Cost cell
-        row.appendChild(createTableCell(formatCost(session.estimated_cost_usd)));
+        // Cost
+        const tdCost = document.createElement('td');
+        tdCost.textContent = '$' + formatCost(session.estimated_cost_usd);
+        row.appendChild(tdCost);
 
-        // Turns cell
-        row.appendChild(createTableCell(String(session.turns || 0)));
+        // Turns
+        const tdTurns = document.createElement('td');
+        tdTurns.textContent = String(session.turns || 0);
+        row.appendChild(tdTurns);
 
         tbody.appendChild(row);
     });
 }
 
 // =============================================================================
-// Warnings Section
+// WARNING ALERT
 // =============================================================================
 
-/**
- * Show warnings for unconfigured models
- * @param {Object} priceConfig - Price configuration from API
- */
 function showWarnings(priceConfig) {
-    const warningCard = document.getElementById('warning-card');
-    const warningMessage = document.getElementById('warning-message');
+    const card = document.getElementById('warning-card');
+    const msg = document.getElementById('warning-message');
 
-    if (!warningCard || !warningMessage) return;
+    if (!card || !msg) return;
 
-    const unconfiguredModels = priceConfig.unconfigured_models || [];
+    const unconfigured = priceConfig?.unconfigured_models || [];
 
-    if (unconfiguredModels.length === 0) {
-        warningCard.style.display = 'none';
+    if (unconfigured.length === 0) {
+        card.style.display = 'none';
         return;
     }
 
-    // Show warning card
-    warningCard.style.display = 'flex';
+    card.style.display = 'flex';
+    const models = unconfigured.length === 1
+        ? `"${unconfigured[0]}"`
+        : `${unconfigured.slice(0, -1).map(m => `"${m}"`).join(', ')} and "${unconfigured[unconfigured.length - 1]}"`;
 
-    // Build warning message
-    const modelsText = unconfiguredModels.length === 1
-        ? `"${unconfiguredModels[0]}"`
-        : `${unconfiguredModels.slice(0, -1).map(m => `"${m}"`).join(', ')} and "${unconfiguredModels[unconfiguredModels.length - 1]}"`;
-
-    warningMessage.textContent =
-        `${unconfiguredModels.length} model${unconfiguredModels.length > 1 ? 's' : ''} (${modelsText}) ` +
-        `don't have pricing configured. Cost estimates may be incomplete.`;
+    msg.textContent = `${unconfigured.length} model(s) (${models}) missing pricing config. Using defaults.`;
 }
 
 // =============================================================================
-// Initialization
+// LIVE CLOCK
 // =============================================================================
 
-/**
- * Initialize the dashboard
- */
+function updateClock() {
+    const el = document.getElementById('live-clock');
+    if (!el) return;
+
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    el.textContent = `${h}:${m}:${s}`;
+}
+
+// =============================================================================
+// INITIALIZATION
+// =============================================================================
+
 async function initDashboard() {
     showLoading();
 
     try {
-        // Fetch data with current filters
         const data = await fetchUsage();
 
-        // Update available models list for dropdown
         if (data.summary && data.summary.by_model) {
             availableModels = Object.keys(data.summary.by_model);
             populateModelDropdown();
         }
 
-        // Check for empty data
         if (!data.sessions || data.sessions.length === 0) {
             showEmptyData();
-            // Still render empty charts
             renderCharts(data);
             showWarnings(data.price_config);
             return;
         }
 
-        // Render components
         renderSummary(data.summary);
         renderCharts(data);
         renderSessionsTable(data.sessions);
         showWarnings(data.price_config);
 
     } catch (error) {
-        console.error('Failed to initialize dashboard:', error);
-        showError(error.message);
+        console.error('Dashboard init failed:', error);
 
-        // Reset loading state on error
-        const tokensEl = document.getElementById('total-tokens');
-        const turnsEl = document.getElementById('total-turns');
-        const costEl = document.getElementById('total-cost');
-        const sessionsEl = document.getElementById('total-sessions');
-        if (tokensEl) tokensEl.textContent = '--';
-        if (turnsEl) turnsEl.textContent = '--';
-        if (costEl) costEl.textContent = '--';
-        if (sessionsEl) sessionsEl.textContent = '--';
+        // Reset metrics on error
+        const metrics = ['total-tokens', 'total-turns', 'total-cost', 'total-sessions'];
+        metrics.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                const numEl = el.querySelector('.metric-number');
+                if (numEl) numEl.textContent = 'ERR';
+            }
+        });
     }
 }
 
-// Initialize when DOM is ready
+// Start on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     initFilterListeners();
     initDashboard();
+    updateClock();
+    setInterval(updateClock, 1000);
 });

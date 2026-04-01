@@ -3,151 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude Code Usage Tracker</title>
+    <title>TokenMeter // Command Console</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Orbitron (display) + JetBrains Mono (code) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Chart.js from CDN with fallback -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" onerror="this.onerror=null; this.src='https://unpkg.com/chart.js@4.4.1/dist/chart.umd.min.js'"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1 class="header__title">Claude Code Usage Tracker</h1>
-            <a href="settings.html" class="header__settings-btn" aria-label="Settings">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                </svg>
+    <!-- Scanline overlay effect -->
+    <div class="scanlines"></div>
+
+    <!-- Grid pattern background -->
+    <div class="grid-overlay"></div>
+
+    <div class="console-container">
+        <!-- Header: Terminal-style branding -->
+        <header class="terminal-header">
+            <div class="header-brand">
+                <div class="brand-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect x="2" y="6" width="28" height="20" rx="2" stroke="var(--neon-cyan)" stroke-width="2"/>
+                        <line x1="6" y1="10" x2="14" y2="18" stroke="var(--neon-cyan)" stroke-width="2"/>
+                        <line x1="6" y1="18" x2="10" y2="18" stroke="var(--neon-cyan)" stroke-width="2"/>
+                        <circle cx="24" cy="14" r="2" fill="var(--neon-green)"/>
+                        <circle cx="24" cy="18" r="2" fill="var(--neon-green)" opacity="0.5"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-name">TOKEN<span class="accent">METER</span></h1>
+                    <span class="brand-sub">// USAGE MONITORING CONSOLE v2.0</span>
+                </div>
+            </div>
+            <div class="header-status">
+                <span class="status-indicator status-active"></span>
+                <span class="status-label">SYSTEM ACTIVE</span>
+                <span class="timestamp" id="live-clock">--:--:--</span>
+            </div>
+            <a href="settings.html" class="settings-link" aria-label="Configure">
+                <span class="link-icon">[CFG]</span>
             </a>
         </header>
 
-        <!-- Filter Bar -->
-        <section class="filter-bar card">
-            <div class="filter-bar__row">
-                <!-- Quick Date Buttons -->
-                <div class="filter-bar__group">
-                    <span class="filter-bar__label">Date:</span>
-                    <button class="filter-bar__btn" data-last="7" data-active="false">7 Days</button>
-                    <button class="filter-bar__btn" data-last="30" data-active="false">30 Days</button>
-                    <button class="filter-bar__btn" data-last="" data-active="true">All</button>
-                </div>
-
-                <!-- Custom Date Range -->
-                <div class="filter-bar__group">
-                    <span class="filter-bar__label">Custom:</span>
-                    <input type="date" class="filter-bar__input" id="filter-from" placeholder="From">
-                    <input type="date" class="filter-bar__input" id="filter-to" placeholder="To">
-                </div>
-
-                <!-- Model Filter -->
-                <div class="filter-bar__group">
-                    <span class="filter-bar__label">Model:</span>
-                    <select class="filter-bar__select" id="filter-model">
-                        <option value="">All Models</option>
-                    </select>
-                </div>
-
-                <!-- Project Filter -->
-                <div class="filter-bar__group">
-                    <span class="filter-bar__label">Project:</span>
-                    <input type="text" class="filter-bar__input" id="filter-project" placeholder="Search project...">
-                </div>
-
-                <!-- Reset Button -->
-                <button class="filter-bar__reset" id="filter-reset">Reset</button>
-            </div>
-        </section>
-
-        <!-- Summary Cards -->
-        <section class="summary-cards">
-            <div class="card summary-card">
-                <div class="summary-card__label">Total Tokens</div>
-                <div class="summary-card__value" id="total-tokens">
-                    <span class="loading-indicator">Loading...</span>
-                </div>
-            </div>
-            <div class="card summary-card">
-                <div class="summary-card__label">Total Turns</div>
-                <div class="summary-card__value" id="total-turns">
-                    <span class="loading-indicator">Loading...</span>
-                </div>
-            </div>
-            <div class="card summary-card">
-                <div class="summary-card__label">Est. Cost</div>
-                <div class="summary-card__value" id="total-cost">
-                    <span class="loading-indicator">Loading...</span>
-                </div>
-            </div>
-            <div class="card summary-card">
-                <div class="summary-card__label">Sessions</div>
-                <div class="summary-card__value" id="total-sessions">
-                    <span class="loading-indicator">Loading...</span>
+        <!-- Command Bar: Filter inputs styled as terminal commands -->
+        <section class="command-bar">
+            <div class="command-line">
+                <span class="prompt">></span>
+                <span class="command-text">FILTER</span>
+                <div class="command-params">
+                    <div class="param-group param-group--date">
+                        <label class="param-label">--date</label>
+                        <div class="date-selector">
+                            <button class="date-trigger" id="date-trigger">
+                                <span class="date-trigger-text" id="date-display">ALL</span>
+                                <span class="date-trigger-arrow">▾</span>
+                            </button>
+                            <div class="date-panel" id="date-panel">
+                                <div class="date-panel-header">
+                                    <span class="date-panel-title">SELECT_RANGE</span>
+                                </div>
+                                <div class="date-presets">
+                                    <button class="date-preset" data-last="7">7_DAYS</button>
+                                    <button class="date-preset" data-last="30">30_DAYS</button>
+                                    <button class="date-preset date-preset--active" data-last="">ALL_TIME</button>
+                                </div>
+                                <div class="date-custom">
+                                    <span class="date-custom-label">CUSTOM_RANGE</span>
+                                    <div class="date-inputs">
+                                        <input type="date" class="date-input" id="filter-from" placeholder="START">
+                                        <span class="date-arrow">→</span>
+                                        <input type="date" class="date-input" id="filter-to" placeholder="END">
+                                    </div>
+                                    <button class="date-apply" id="date-apply">APPLY</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">--model</label>
+                        <select class="param-select" id="filter-model">
+                            <option value="">*</option>
+                        </select>
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">--project</label>
+                        <input type="text" class="param-input param-input--text" id="filter-project" placeholder="grep...">
+                    </div>
+                    <button class="param-btn param-btn--reset" id="filter-reset">RESET</button>
                 </div>
             </div>
         </section>
 
-        <!-- Charts Row -->
-        <section class="charts-section">
-            <div class="card chart-card chart-card--full">
-                <h2 class="card__title">Token Usage Over Time</h2>
-                <div class="chart-container">
+        <!-- Main Data Grid: Asymmetric control panel layout -->
+        <main class="data-grid">
+            <!-- Core Metrics: Large prominent displays -->
+            <section class="core-panel">
+                <div class="panel-header">
+                    <span class="panel-tag">[CORE_METRICS]</span>
+                    <span class="panel-pulse"></span>
+                </div>
+                <div class="metrics-array">
+                    <div class="metric-unit metric-unit--primary">
+                        <div class="metric-glow"></div>
+                        <div class="metric-label">TOTAL_TOKENS</div>
+                        <div class="metric-value" id="total-tokens">
+                            <span class="metric-prefix">></span>
+                            <span class="metric-number loading-pulse">---</span>
+                        </div>
+                        <div class="metric-breakdown" id="token-breakdown">
+                            <span class="breakdown-item">IN: <span id="input-tokens">---</span></span>
+                            <span class="breakdown-item">OUT: <span id="output-tokens">---</span></span>
+                        </div>
+                    </div>
+                    <div class="metric-unit">
+                        <div class="metric-label">TOTAL_TURNS</div>
+                        <div class="metric-value" id="total-turns">
+                            <span class="metric-prefix">#</span>
+                            <span class="metric-number loading-pulse">---</span>
+                        </div>
+                    </div>
+                    <div class="metric-unit">
+                        <div class="metric-label">EST_COST</div>
+                        <div class="metric-value" id="total-cost">
+                            <span class="metric-prefix">$</span>
+                            <span class="metric-number loading-pulse">---</span>
+                        </div>
+                        <div class="metric-unit-tag">USD</div>
+                    </div>
+                    <div class="metric-unit">
+                        <div class="metric-label">SESSIONS</div>
+                        <div class="metric-value" id="total-sessions">
+                            <span class="metric-prefix">Σ</span>
+                            <span class="metric-number loading-pulse">---</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Token Flow Chart -->
+            <section class="flow-panel">
+                <div class="panel-header">
+                    <span class="panel-tag">[TOKEN_FLOW]</span>
+                    <span class="panel-dim">TIMELINE</span>
+                </div>
+                <div class="chart-frame">
                     <canvas id="tokens-chart"></canvas>
                 </div>
-            </div>
+            </section>
 
-            <div class="charts-row">
-                <div class="card chart-card">
-                    <h2 class="card__title">By Project</h2>
-                    <div class="chart-container">
-                        <canvas id="project-chart"></canvas>
-                    </div>
+            <!-- Distribution Panels: Side-by-side -->
+            <section class="dist-panel">
+                <div class="panel-header">
+                    <span class="panel-tag">[PROJECT_DIST]</span>
                 </div>
-                <div class="card chart-card">
-                    <h2 class="card__title">By Model</h2>
-                    <div class="chart-container">
-                        <canvas id="model-chart"></canvas>
-                    </div>
+                <div class="chart-frame chart-frame--pie">
+                    <canvas id="project-chart"></canvas>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Sessions Table -->
-        <section class="card sessions-section">
-            <h2 class="card__title">Sessions</h2>
-            <div class="table-wrapper">
-                <table class="sessions-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Project</th>
-                            <th>Model</th>
-                            <th>Tokens</th>
-                            <th>Cost</th>
-                            <th>Turns</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sessions-body">
-                        <!-- Data will be populated by JavaScript -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
+            <section class="dist-panel">
+                <div class="panel-header">
+                    <span class="panel-tag">[MODEL_DIST]</span>
+                </div>
+                <div class="chart-frame chart-frame--pie">
+                    <canvas id="model-chart"></canvas>
+                </div>
+            </section>
 
-        <!-- Warning for unconfigured models -->
-        <div class="warning-card card" id="warning-card" style="display: none;">
-            <div class="warning-card__icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
+            <!-- Session Log: Terminal-style streaming data -->
+            <section class="log-panel">
+                <div class="panel-header">
+                    <span class="panel-tag">[SESSION_LOG]</span>
+                    <span class="panel-dim">LAST_20</span>
+                </div>
+                <div class="log-stream">
+                    <table class="log-table">
+                        <thead class="log-head">
+                            <tr>
+                                <th class="log-col">TIMESTAMP</th>
+                                <th class="log-col">PROJECT</th>
+                                <th class="log-col">MODEL</th>
+                                <th class="log-col">TOKENS</th>
+                                <th class="log-col">COST</th>
+                                <th class="log-col">TURNS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessions-body">
+                            <!-- Streaming data rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Warning Alert: Styled as system notification -->
+        <aside class="alert-panel" id="warning-card" style="display: none;">
+            <div class="alert-icon">
+                <span class="alert-symbol">⚠</span>
             </div>
-            <div class="warning-card__content">
-                <h3 class="warning-card__title">Unconfigured Models Detected</h3>
-                <p class="warning-card__message" id="warning-message">Some models don't have pricing configured. Cost estimates may be incomplete.</p>
-                <a href="settings.html" class="warning-card__link">Configure Prices</a>
+            <div class="alert-content">
+                <div class="alert-header">SYS_ALERT: UNCONFIGURED_MODELS</div>
+                <div class="alert-message" id="warning-message">Pricing config incomplete. Estimates may use defaults.</div>
+                <a href="settings.html" class="alert-link">[RUN_CONFIG]</a>
             </div>
-        </div>
+        </aside>
+
+        <!-- Footer: Minimal system info -->
+        <footer class="terminal-footer">
+            <span class="footer-text">TOKENMETER // <span class="accent">CLAUDE CODE USAGE TRACKER</span></span>
+            <span class="footer-sep">|</span>
+            <span class="footer-link">~/.claude/projects</span>
+        </footer>
     </div>
 
     <script src="app.js"></script>
