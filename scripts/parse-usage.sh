@@ -145,10 +145,10 @@ while IFS= read -r -d '' jsonl_file; do
     # Skip if file doesn't exist or is not readable
     [[ -r "${jsonl_file}" ]] || continue
 
-    # Extract assistant messages with usage info
+    # Extract assistant messages with usage info (exclude synthetic model)
     # Filter by project if specified
     if ! jq -c '
-        select(.type == "assistant" and .message.usage != null) |
+        select(.type == "assistant" and .message.usage != null and .message.model != "<synthetic>") |
         {
             sessionId: .sessionId,
             cwd: .cwd,
