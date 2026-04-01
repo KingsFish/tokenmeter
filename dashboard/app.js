@@ -720,7 +720,7 @@ function renderSessionsTable(sessions) {
         // Project
         const tdProj = document.createElement('td');
         tdProj.textContent = session.project_name || 'UNKNOWN';
-        tdProb.title = session.project_path || '';
+        tdProj.title = session.project_path || '';
         row.appendChild(tdProj);
 
         // Model
