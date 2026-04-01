@@ -30,49 +30,54 @@
                 </div>
                 <div class="brand-text">
                     <h1 class="brand-name">TOKEN<span class="accent">METER</span></h1>
-                    <span class="brand-sub">// USAGE MONITORING CONSOLE v2.0</span>
+                    <span class="brand-sub" data-i18n="brandSub">// 用量监控控制台 v2.0</span>
                 </div>
             </div>
             <div class="header-status">
                 <span class="status-indicator status-active"></span>
-                <span class="status-label">SYSTEM ACTIVE</span>
+                <span class="status-label" data-i18n="systemActive">系统运行中</span>
                 <span class="timestamp" id="live-clock">--:--:--</span>
             </div>
-            <a href="settings.html" class="settings-link" aria-label="Configure">
-                <span class="link-icon">[CFG]</span>
-            </a>
+            <div class="header-actions">
+                <button class="lang-toggle" id="lang-toggle" title="切换语言">
+                    <span class="lang-label" id="lang-label">EN</span>
+                </button>
+                <a href="settings.html" class="settings-link" aria-label="Configure">
+                    <span class="link-icon" data-i18n="config">[配置]</span>
+                </a>
+            </div>
         </header>
 
         <!-- Command Bar: Filter inputs styled as terminal commands -->
         <section class="command-bar">
             <div class="command-line">
                 <span class="prompt">></span>
-                <span class="command-text">FILTER</span>
+                <span class="command-text" data-i18n="filter">筛选</span>
                 <div class="command-params">
                     <div class="param-group param-group--date">
                         <label class="param-label">--date</label>
                         <div class="date-selector">
                             <button class="date-trigger" id="date-trigger">
-                                <span class="date-trigger-text" id="date-display">ALL</span>
+                                <span class="date-trigger-text" id="date-display" data-i18n="all">全部</span>
                                 <span class="date-trigger-arrow">▾</span>
                             </button>
                             <div class="date-panel" id="date-panel">
                                 <div class="date-panel-header">
-                                    <span class="date-panel-title">SELECT_RANGE</span>
+                                    <span class="date-panel-title" data-i18n="selectRange">选择范围</span>
                                 </div>
                                 <div class="date-presets">
-                                    <button class="date-preset" data-last="7">7_DAYS</button>
-                                    <button class="date-preset" data-last="30">30_DAYS</button>
-                                    <button class="date-preset date-preset--active" data-last="">ALL_TIME</button>
+                                    <button class="date-preset" data-last="7" data-i18n="days7">7天</button>
+                                    <button class="date-preset" data-last="30" data-i18n="days30">30天</button>
+                                    <button class="date-preset date-preset--active" data-last="" data-i18n="allTime">全部时间</button>
                                 </div>
                                 <div class="date-custom">
-                                    <span class="date-custom-label">CUSTOM_RANGE</span>
+                                    <span class="date-custom-label" data-i18n="customRange">自定义范围</span>
                                     <div class="date-inputs">
-                                        <input type="date" class="date-input" id="filter-from" placeholder="START">
+                                        <input type="date" class="date-input" id="filter-from" data-i18n-placeholder="start" placeholder="开始">
                                         <span class="date-arrow">→</span>
-                                        <input type="date" class="date-input" id="filter-to" placeholder="END">
+                                        <input type="date" class="date-input" id="filter-to" data-i18n-placeholder="end" placeholder="结束">
                                     </div>
-                                    <button class="date-apply" id="date-apply">APPLY</button>
+                                    <button class="date-apply" id="date-apply" data-i18n="apply">应用</button>
                                 </div>
                             </div>
                         </div>
@@ -80,14 +85,14 @@
                     <div class="param-group">
                         <label class="param-label">--model</label>
                         <select class="param-select" id="filter-model">
-                            <option value="">*</option>
+                            <option value="" data-i18n="allModels">全部模型</option>
                         </select>
                     </div>
                     <div class="param-group">
                         <label class="param-label">--project</label>
-                        <input type="text" class="param-input param-input--text" id="filter-project" placeholder="grep...">
+                        <input type="text" class="param-input param-input--text" id="filter-project" data-i18n-placeholder="searchProject" placeholder="搜索项目...">
                     </div>
-                    <button class="param-btn param-btn--reset" id="filter-reset">RESET</button>
+                    <button class="param-btn param-btn--reset" id="filter-reset" data-i18n="reset">重置</button>
                 </div>
             </div>
         </section>
@@ -103,25 +108,25 @@
                 <div class="metrics-array">
                     <div class="metric-unit metric-unit--primary">
                         <div class="metric-glow"></div>
-                        <div class="metric-label">TOTAL_TOKENS</div>
+                        <div class="metric-label" data-i18n="totalTokens">总Token数</div>
                         <div class="metric-value" id="total-tokens">
                             <span class="metric-prefix">></span>
                             <span class="metric-number loading-pulse">---</span>
                         </div>
                         <div class="metric-breakdown" id="token-breakdown">
-                            <span class="breakdown-item">IN: <span id="input-tokens">---</span></span>
-                            <span class="breakdown-item">OUT: <span id="output-tokens">---</span></span>
+                            <span class="breakdown-item"><span data-i18n="input">输入</span>: <span id="input-tokens">---</span></span>
+                            <span class="breakdown-item"><span data-i18n="output">输出</span>: <span id="output-tokens">---</span></span>
                         </div>
                     </div>
                     <div class="metric-unit">
-                        <div class="metric-label">TOTAL_TURNS</div>
+                        <div class="metric-label" data-i18n="totalTurns">总轮次</div>
                         <div class="metric-value" id="total-turns">
                             <span class="metric-prefix">#</span>
                             <span class="metric-number loading-pulse">---</span>
                         </div>
                     </div>
                     <div class="metric-unit">
-                        <div class="metric-label">EST_COST</div>
+                        <div class="metric-label" data-i18n="estCost">预估费用</div>
                         <div class="metric-value" id="total-cost">
                             <span class="metric-prefix">$</span>
                             <span class="metric-number loading-pulse">---</span>
@@ -129,7 +134,7 @@
                         <div class="metric-unit-tag">USD</div>
                     </div>
                     <div class="metric-unit">
-                        <div class="metric-label">SESSIONS</div>
+                        <div class="metric-label" data-i18n="sessions">会话数</div>
                         <div class="metric-value" id="total-sessions">
                             <span class="metric-prefix">Σ</span>
                             <span class="metric-number loading-pulse">---</span>
@@ -142,7 +147,7 @@
             <section class="flow-panel">
                 <div class="panel-header">
                     <span class="panel-tag">[TOKEN_FLOW]</span>
-                    <span class="panel-dim">TIMELINE</span>
+                    <span class="panel-dim" data-i18n="timeline">时间线</span>
                 </div>
                 <div class="chart-frame">
                     <canvas id="tokens-chart"></canvas>
@@ -152,7 +157,7 @@
             <!-- Distribution Panels: Side-by-side -->
             <section class="dist-panel">
                 <div class="panel-header">
-                    <span class="panel-tag">[PROJECT_DIST]</span>
+                    <span class="panel-tag" data-i18n="projectDist">[项目分布]</span>
                 </div>
                 <div class="chart-frame chart-frame--pie">
                     <canvas id="project-chart"></canvas>
@@ -161,7 +166,7 @@
 
             <section class="dist-panel">
                 <div class="panel-header">
-                    <span class="panel-tag">[MODEL_DIST]</span>
+                    <span class="panel-tag" data-i18n="modelDist">[模型分布]</span>
                 </div>
                 <div class="chart-frame chart-frame--pie">
                     <canvas id="model-chart"></canvas>
@@ -172,18 +177,18 @@
             <section class="log-panel">
                 <div class="panel-header">
                     <span class="panel-tag">[SESSION_LOG]</span>
-                    <span class="panel-dim">LAST_20</span>
+                    <span class="panel-dim" data-i18n="last20">最近20条</span>
                 </div>
                 <div class="log-stream">
                     <table class="log-table">
                         <thead class="log-head">
                             <tr>
-                                <th class="log-col">TIMESTAMP</th>
-                                <th class="log-col">PROJECT</th>
-                                <th class="log-col">MODEL</th>
-                                <th class="log-col">TOKENS</th>
-                                <th class="log-col">COST</th>
-                                <th class="log-col">TURNS</th>
+                                <th class="log-col" data-i18n="timestamp">时间戳</th>
+                                <th class="log-col" data-i18n="project">项目</th>
+                                <th class="log-col" data-i18n="model">模型</th>
+                                <th class="log-col" data-i18n="tokens">Token数</th>
+                                <th class="log-col" data-i18n="cost">费用</th>
+                                <th class="log-col" data-i18n="turns">轮次</th>
                             </tr>
                         </thead>
                         <tbody id="sessions-body">
@@ -200,15 +205,15 @@
                 <span class="alert-symbol">⚠</span>
             </div>
             <div class="alert-content">
-                <div class="alert-header">SYS_ALERT: UNCONFIGURED_MODELS</div>
-                <div class="alert-message" id="warning-message">Pricing config incomplete. Estimates may use defaults.</div>
-                <a href="settings.html" class="alert-link">[RUN_CONFIG]</a>
+                <div class="alert-header" data-i18n="sysAlert">系统警告: 未配置模型</div>
+                <div class="alert-message" id="warning-message" data-i18n="warningMsg">价格配置不完整，预估值可能使用默认价格。</div>
+                <a href="settings.html" class="alert-link" data-i18n="runConfig">[运行配置]</a>
             </div>
         </aside>
 
         <!-- Footer: Minimal system info -->
         <footer class="terminal-footer">
-            <span class="footer-text">TOKENMETER // <span class="accent">CLAUDE CODE USAGE TRACKER</span></span>
+            <span class="footer-text">TOKENMETER // <span class="accent" data-i18n="usageTracker">Claude Code 用量追踪器</span></span>
             <span class="footer-sep">|</span>
             <span class="footer-link">~/.claude/projects</span>
         </footer>
