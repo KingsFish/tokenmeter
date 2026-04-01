@@ -3,207 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Claude Code Usage Tracker</title>
+    <title>TokenMeter // Config Console</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        .settings-header {
+        /* Settings-specific overrides */
+        .config-container {
+            max-width: 900px;
+        }
+
+        /* Config Header */
+        .config-header {
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-dim);
         }
 
-        .back-btn {
+        .back-link {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 40px;
             height: 40px;
-            border-radius: var(--radius-sm);
-            background-color: transparent;
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
             color: var(--text-secondary);
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
-        .back-btn:hover {
-            background-color: var(--border-color);
-            color: var(--text-color);
+        .back-link:hover {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: var(--glow-soft);
         }
 
-        .settings-header__title {
-            font-size: 1.5rem;
+        .config-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
             font-weight: 700;
-            color: var(--text-color);
+            letter-spacing: 0.1em;
+            color: var(--text-primary);
         }
 
-        .settings-section {
-            margin-bottom: 2rem;
+        .config-title .accent {
+            color: var(--neon-cyan);
         }
 
-        .settings-section__title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-color);
-            margin-bottom: 0.5rem;
+        /* Config Sections */
+        .config-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-dim);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
         }
 
-        .settings-section__description {
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-dim);
+        }
+
+        .section-tag {
+            font-size: 0.7rem;
+            color: var(--neon-cyan);
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .section-dim {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+        }
+
+        .section-desc {
+            font-size: 0.7rem;
             color: var(--text-secondary);
             margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-
-        /* Price Form */
-        .price-form {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
-            gap: 1rem;
-            align-items: end;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-group label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .form-group input {
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            font-size: 1rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn--primary {
-            background-color: var(--accent-color);
-            color: white;
-        }
-
-        .btn--primary:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .btn--primary:disabled {
-            background-color: var(--text-secondary);
-            cursor: not-allowed;
-        }
-
-        .btn--secondary {
-            background-color: var(--border-color);
-            color: var(--text-color);
-        }
-
-        .btn--secondary:hover {
-            background-color: var(--text-secondary);
-            color: white;
-        }
-
-        .btn--danger {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        .btn--danger:hover {
-            background-color: #dc2626;
-        }
-
-        .btn--sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.75rem;
+            line-height: 1.6;
         }
 
         /* Models Table */
-        .models-table-wrapper {
+        .config-table-wrapper {
             overflow-x: auto;
-            margin-top: 1rem;
         }
 
-        .models-table {
+        .config-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.875rem;
+            font-size: 0.7rem;
         }
 
-        .models-table th,
-        .models-table td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .models-table th {
-            font-weight: 600;
-            color: var(--text-secondary);
-            background-color: var(--table-row-alt);
-        }
-
-        .models-table tbody tr:nth-child(even) {
-            background-color: var(--table-row-alt);
-        }
-
-        .models-table tbody tr:hover {
-            background-color: rgba(79, 70, 229, 0.1);
-        }
-
-        .models-table .price-input {
-            width: 100px;
+        .config-table th {
             padding: 0.5rem 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            font-size: 0.875rem;
+            text-align: left;
+            font-weight: 500;
+            color: var(--neon-cyan);
+            letter-spacing: 0.1em;
+            font-size: 0.6rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-active);
         }
 
-        .models-table .price-input:focus {
+        .config-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border-dim);
+            color: var(--text-primary);
+        }
+
+        .config-table tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .config-table tbody tr:hover td {
+            color: var(--neon-cyan);
+        }
+
+        .price-input {
+            width: 80px;
+            padding: 0.35rem 0.5rem;
+            background: var(--bg-deep);
+            border: 1px solid var(--border-dim);
+            border-radius: 3px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+        }
+
+        .price-input:focus {
             outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: var(--glow-soft);
         }
 
-        .models-table .actions-cell {
-            text-align: right;
+        /* Buttons */
+        .btn-cyber {
+            padding: 0.4rem 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            border: 1px solid var(--border-dim);
+            border-radius: 3px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
         }
 
-        /* Default Price Form */
-        .default-price-form {
+        .btn-cyber:hover {
+            border-color: var(--neon-cyan);
+            color: var(--text-primary);
+        }
+
+        .btn-cyber--primary {
+            background: rgba(0, 255, 213, 0.1);
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .btn-cyber--primary:hover {
+            background: rgba(0, 255, 213, 0.2);
+            box-shadow: var(--glow-soft);
+        }
+
+        .btn-cyber--danger {
+            color: var(--neon-red);
+            border-color: rgba(255, 45, 85, 0.3);
+        }
+
+        .btn-cyber--danger:hover {
+            border-color: var(--neon-red);
+            box-shadow: 0 0 8px rgba(255, 45, 85, 0.3);
+        }
+
+        .btn-cyber--lg {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.7rem;
+        }
+
+        /* Add Model Form */
+        .add-form {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1rem;
+            grid-template-columns: 1fr 100px 100px auto;
+            gap: 0.75rem;
+            align-items: end;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .form-label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.1em;
+        }
+
+        .form-input {
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-deep);
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: var(--glow-soft);
         }
 
         /* Unconfigured Models */
@@ -211,206 +233,209 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            margin-top: 1rem;
         }
 
         .unconfigured-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 1rem;
-            background-color: var(--table-row-alt);
-            border-radius: var(--radius-sm);
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .unconfigured-item:hover {
+            border-color: var(--neon-amber);
         }
 
         .unconfigured-item__name {
-            font-weight: 500;
-            color: var(--text-color);
+            font-size: 0.7rem;
+            color: var(--neon-amber);
         }
 
-        /* Save Actions Bar */
-        .save-actions {
+        /* Default Price Grid */
+        .default-price-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Action Bar */
+        .config-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-color);
+            gap: 0.75rem;
+            padding: 1rem 0;
+            margin-top: 0.5rem;
+            border-top: 1px solid var(--border-dim);
         }
 
-        /* Toast Animation */
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        /* Info Box */
+        .info-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dim);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
         }
 
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+        .info-box__text {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
         }
 
-        /* Responsive Design */
+        .info-box__code {
+            background: var(--bg-deep);
+            padding: 0.15rem 0.35rem;
+            border-radius: 2px;
+            color: var(--neon-green);
+            font-size: 0.6rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 1rem;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .settings-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .back-btn {
-                align-self: flex-start;
-            }
-
-            .price-form {
+            .add-form {
                 grid-template-columns: 1fr;
             }
 
-            .default-price-form {
+            .default-price-grid {
                 grid-template-columns: 1fr;
             }
 
-            .models-table {
-                font-size: 0.75rem;
-            }
-
-            .models-table th,
-            .models-table td {
-                padding: 0.5rem 0.75rem;
-            }
-
-            .models-table .price-input {
-                width: 80px;
-            }
-
-            .save-actions {
+            .config-actions {
                 flex-direction: column;
             }
 
-            .save-actions .btn {
+            .config-actions .btn-cyber--lg {
                 width: 100%;
             }
+        }
+
+        /* Toast Animations */
+        @keyframes toastSlide {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastSlideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="scanlines"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="console-container config-container">
         <!-- Header -->
-        <header class="settings-header">
-            <a href="index.html" class="back-btn" aria-label="Back to dashboard">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
+        <header class="config-header">
+            <a href="index.html" class="back-link" aria-label="Back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
                 </svg>
             </a>
-            <h1 class="settings-header__title">Price Configuration</h1>
+            <h1 class="config-title">PRICE <span class="accent">CONFIG</span></h1>
         </header>
 
-        <!-- Configured Models Section -->
-        <section class="card settings-section">
-            <h2 class="settings-section__title">Configured Models</h2>
-            <p class="settings-section__description">
-                Edit prices directly in the table. Changes are saved when you click "Save All".
-            </p>
-
-            <div class="models-table-wrapper">
-                <table class="models-table">
+        <!-- Configured Models -->
+        <section class="config-section">
+            <div class="section-header">
+                <span class="section-tag">[CONFIGURED_MODELS]</span>
+            </div>
+            <p class="section-desc">Edit prices directly in the table. Click SAVE_ALL to apply changes.</p>
+            <div class="config-table-wrapper">
+                <table class="config-table">
                     <thead>
                         <tr>
-                            <th>Model Name</th>
-                            <th>Input Price ($/M)</th>
-                            <th>Output Price ($/M)</th>
-                            <th>Actions</th>
+                            <th>MODEL</th>
+                            <th>INPUT $/M</th>
+                            <th>OUTPUT $/M</th>
+                            <th>ACTION</th>
                         </tr>
                     </thead>
                     <tbody id="models-table-body">
-                        <!-- Populated by JavaScript -->
+                        <tr><td colspan="4" class="empty-state">LOADING...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Add New Model Section -->
-        <section class="card settings-section">
-            <h2 class="settings-section__title">Add New Model</h2>
-            <p class="settings-section__description">
-                Manually add a model with custom pricing.
-            </p>
-
-            <form class="price-form" id="add-model-form">
-                <div class="form-group">
-                    <label for="new-model-name">Model Name</label>
-                    <input type="text" id="new-model-name" placeholder="e.g., claude-3-opus" required>
+        <!-- Add Model -->
+        <section class="config-section">
+            <div class="section-header">
+                <span class="section-tag">[ADD_MODEL]</span>
+            </div>
+            <form class="add-form" id="add-model-form">
+                <div class="form-field">
+                    <label class="form-label">MODEL_NAME</label>
+                    <input type="text" class="form-input" id="new-model-name" placeholder="claude-3-opus" required>
                 </div>
-                <div class="form-group">
-                    <label for="new-input-price">Input Price ($/M)</label>
-                    <input type="number" id="new-input-price" placeholder="e.g., 15.00" step="0.01" min="0" required>
+                <div class="form-field">
+                    <label class="form-label">INPUT $/M</label>
+                    <input type="number" class="form-input" id="new-input-price" placeholder="15.00" step="0.01" min="0" required>
                 </div>
-                <div class="form-group">
-                    <label for="new-output-price">Output Price ($/M)</label>
-                    <input type="number" id="new-output-price" placeholder="e.g., 75.00" step="0.01" min="0" required>
+                <div class="form-field">
+                    <label class="form-label">OUTPUT $/M</label>
+                    <input type="number" class="form-input" id="new-output-price" placeholder="75.00" step="0.01" min="0" required>
                 </div>
-                <button type="submit" class="btn btn--primary">Add Model</button>
+                <button type="submit" class="btn-cyber btn-cyber--primary">ADD</button>
             </form>
         </section>
 
-        <!-- Unconfigured Models Section -->
-        <section class="card settings-section">
-            <h2 class="settings-section__title">Detected Models (Unconfigured)</h2>
-            <p class="settings-section__description">
-                These models have been detected in your usage data but don't have pricing configured.
-                Click "Add" to use the default prices.
-            </p>
-
+        <!-- Unconfigured Models -->
+        <section class="config-section">
+            <div class="section-header">
+                <span class="section-tag">[DETECTED_MODELS]</span>
+                <span class="section-dim">UNCONFIGURED</span>
+            </div>
+            <p class="section-desc">Models found in usage data without pricing. Click ADD to use default prices.</p>
             <div class="unconfigured-list" id="unconfigured-models">
-                <!-- Populated by JavaScript -->
+                <div class="empty-state">LOADING...</div>
             </div>
         </section>
 
-        <!-- Default Price Section -->
-        <section class="card settings-section">
-            <h2 class="settings-section__title">Default Prices</h2>
-            <p class="settings-section__description">
-                These prices are used for models without specific configuration.
-            </p>
-
-            <div class="default-price-form">
-                <div class="form-group">
-                    <label for="default-input-price">Default Input Price ($/M)</label>
-                    <input type="number" id="default-input-price" step="0.01" min="0">
+        <!-- Default Prices -->
+        <section class="config-section">
+            <div class="section-header">
+                <span class="section-tag">[DEFAULT_PRICES]</span>
+            </div>
+            <p class="section-desc">Fallback prices for models without specific configuration.</p>
+            <div class="default-price-grid">
+                <div class="form-field">
+                    <label class="form-label">DEFAULT_INPUT $/M</label>
+                    <input type="number" class="form-input" id="default-input-price" step="0.01" min="0">
                 </div>
-                <div class="form-group">
-                    <label for="default-output-price">Default Output Price ($/M)</label>
-                    <input type="number" id="default-output-price" step="0.01" min="0">
+                <div class="form-field">
+                    <label class="form-label">DEFAULT_OUTPUT $/M</label>
+                    <input type="number" class="form-input" id="default-output-price" step="0.01" min="0">
                 </div>
             </div>
         </section>
 
-        <!-- Save Actions -->
-        <div class="save-actions">
-            <button type="button" class="btn btn--secondary" id="cancel-btn">Cancel</button>
-            <button type="button" class="btn btn--primary" id="save-btn">Save All</button>
+        <!-- Actions -->
+        <div class="config-actions">
+            <button type="button" class="btn-cyber btn-cyber--lg" id="cancel-btn">CANCEL</button>
+            <button type="button" class="btn-cyber btn-cyber--primary btn-cyber--lg" id="save-btn">SAVE_ALL</button>
         </div>
 
-        <!-- Info Section -->
-        <section class="card settings-section">
-            <h2 class="settings-section__title">About Price Configuration</h2>
-            <p class="settings-section__description">
-                Claude Code Usage Tracker uses these prices to estimate costs from your token usage.
-                Prices are specified per million tokens (1M = 1,000,000 tokens).
-                Configuration is saved to <code style="background: var(--table-row-alt); padding: 0.125rem 0.25rem; border-radius: 2px;">~/.claude/tokenmeter/prices.json</code>.
+        <!-- Info -->
+        <div class="info-box">
+            <p class="info-box__text">
+                Prices are per million tokens (1M = 1,000,000).
+                Config saved to <code class="info-box__code">~/.claude/tokenmeter/prices.json</code>
             </p>
-        </section>
+        </div>
     </div>
 
     <script src="settings.js"></script>

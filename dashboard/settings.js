@@ -131,25 +131,35 @@ function showToast(message, type = 'success') {
     toast.className = `toast toast--${type}`;
     toast.textContent = message;
 
-    // Add styles inline
+    // Cyberpunk themed styles
+    const bgColor = type === 'success'
+        ? 'rgba(0, 255, 136, 0.9)'
+        : 'rgba(255, 45, 85, 0.9)';
+    const textColor = '#030508';
+
     toast.style.cssText = `
         position: fixed;
         bottom: 20px;
         right: 20px;
         padding: 12px 20px;
-        border-radius: 8px;
-        background-color: ${type === 'success' ? '#10b981' : '#ef4444'};
-        color: white;
+        border-radius: 4px;
+        background: ${bgColor};
+        color: ${textColor};
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
         font-weight: 500;
-        z-index: 1000;
-        animation: slideIn 0.3s ease;
+        letter-spacing: 0.05em;
+        z-index: 10000;
+        border: 1px solid ${bgColor};
+        box-shadow: 0 0 20px ${bgColor};
+        animation: toastSlide 0.3s ease;
     `;
 
     document.body.appendChild(toast);
 
     // Auto remove after 3 seconds
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease';
+        toast.style.animation = 'toastSlideOut 0.3s ease';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
@@ -190,8 +200,7 @@ function createEmptyTableRow(message, colspan) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
     cell.setAttribute('colspan', String(colspan));
-    cell.style.textAlign = 'center';
-    cell.style.color = 'var(--text-secondary)';
+    cell.className = 'empty-state';
     cell.textContent = message;
     row.appendChild(cell);
     return row;
@@ -282,8 +291,8 @@ function renderConfiguredModelsTable() {
         actionsCell.className = 'actions-cell';
 
         const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn--danger btn--sm';
-        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'btn-cyber btn-cyber--danger';
+        deleteBtn.textContent = 'DELETE';
         deleteBtn.addEventListener('click', () => handleDeleteModel(modelName));
         actionsCell.appendChild(deleteBtn);
 
@@ -315,9 +324,7 @@ function renderUnconfiguredModels() {
 
     if (finalUnconfigured.length === 0) {
         const emptyMsg = document.createElement('p');
-        emptyMsg.className = 'empty-message';
-        emptyMsg.style.color = 'var(--text-secondary)';
-        emptyMsg.style.fontSize = '0.875rem';
+        emptyMsg.className = 'empty-state';
         emptyMsg.textContent = 'All detected models have pricing configured.';
         container.appendChild(emptyMsg);
         return;
@@ -336,8 +343,8 @@ function renderUnconfiguredModels() {
         item.appendChild(nameSpan);
 
         const addBtn = document.createElement('button');
-        addBtn.className = 'btn btn--primary btn--sm';
-        addBtn.textContent = 'Add';
+        addBtn.className = 'btn-cyber btn-cyber--primary';
+        addBtn.textContent = 'ADD';
         addBtn.addEventListener('click', () => handleAddFromUnconfigured(modelName));
         item.appendChild(addBtn);
 
