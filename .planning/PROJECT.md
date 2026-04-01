@@ -21,12 +21,14 @@ Help users monitor and understand their Claude Code token consumption and costs 
 - ✓ Date/model/project filtering in CLI and Dashboard
 - ✓ Dark mode support in dashboard
 - ✓ Plugin marketplace registration
+- ✓ GitHub repository accessible (KingsFish/tokenmeter) — Validated in Phase 1
+- ✓ Marketplace installation works (`claude plugin install tokenmeter`) — Validated in Phase 1
+- ✓ All three commands work after fresh installation — Validated in Phase 1
+- ✓ zsh shell compatibility — Validated in Phase 1
 
 ### Active
 
-- [ ] Create GitHub repository (KingsFish/tokenmeter)
-- [ ] Test installation on fresh Claude Code setup
-- [ ] Real-time tracking via Claude Code hooks
+- [ ] Real-time tracking via Claude Code hooks (Phase 2)
 - [ ] Settings page button layout improvement
 - [ ] UI modernization with frontend-dev skill
 - [ ] Data loading performance optimization
@@ -70,9 +72,10 @@ Help users monitor and understand their Claude Code token consumption and costs 
 | Vanilla JS frontend | No build step, easy to maintain | ✓ Good - lightweight |
 | Chart.js from CDN | No bundling required, always latest | — Pending - offline support? |
 | JSONL transcript parsing | Direct access to Claude Code data | ✓ Good - real data source |
+| zsh nullglob in commands | Prevents glob errors in zsh shell | ✓ Good - broader shell support |
 
 ---
-*Last updated: 2026-04-01 after initialization*
+*Last updated: 2026-04-01 after Phase 1 completion*
 
 ## Evolution
 
