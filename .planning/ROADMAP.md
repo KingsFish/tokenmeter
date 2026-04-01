@@ -21,8 +21,8 @@
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Push code to GitHub, verify README documentation
-- [ ] 01-02-PLAN.md — Test marketplace installation and command functionality
+- [x] 01-01-PLAN.md — Push code to GitHub, verify README documentation
+- [x] 01-02-PLAN.md — Test marketplace installation and command functionality
 
 ---
 
