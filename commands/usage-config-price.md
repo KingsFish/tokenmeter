@@ -42,6 +42,9 @@ This command manages model price configuration for cost estimation.
 ### Execute
 
 !`
+# Enable nullglob for zsh compatibility (no error on unmatched globs)
+setopt nullglob 2>/dev/null || set -o nullglob 2>/dev/null
+
 # Find the tokenmeter plugin directory
 # First try fallback search (more reliable across execution contexts)
 TOKENMETER_DIR=""

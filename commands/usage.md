@@ -11,6 +11,9 @@ Arguments: `$ARGUMENTS`
 Usage summary data:
 
 !`
+# Enable nullglob for zsh compatibility (no error on unmatched globs)
+setopt nullglob 2>/dev/null || set -o nullglob 2>/dev/null
+
 # Find the parse-usage.sh script
 SCRIPT=""
 for p in ~/.claude/plugins/cache/tokenmeter-marketplace/tokenmeter/*/scripts/parse-usage.sh; do

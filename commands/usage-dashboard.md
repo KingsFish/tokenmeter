@@ -29,6 +29,9 @@ If it doesn't open, you can access it manually at the URL shown in the output.
 ### Execute
 
 !`
+# Enable nullglob for zsh compatibility (no error on unmatched globs)
+setopt nullglob 2>/dev/null || set -o nullglob 2>/dev/null
+
 # Find the tokenmeter plugin directory based on this script's location
 # First try fallback search (more reliable across execution contexts)
 TOKENMETER_DIR=""
