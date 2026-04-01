@@ -65,42 +65,11 @@ if [ -n "$ARGUMENTS" ]; then
   fi
 fi
 
-# Start dashboard server in background
+# Start dashboard using the original script (it handles browser opening)
 export PORT
-"${TOKENMETER_DIR}/scripts/dashboard-server.py" &
-SERVER_PID=$!
+"${TOKENMETER_DIR}/scripts/start-dashboard.sh" &
 
-# Wait for server to start
-sleep 1
-
-# Check if server is running
-if ! kill -0 $SERVER_PID 2>/dev/null; then
-  echo "Error: Failed to start dashboard server"
-  exit 1
-fi
-
-# Open browser
-URL="http://localhost:${PORT}"
-echo "Dashboard running at: ${URL}"
-if command -v open &>/dev/null; then
-  open "$URL" 2>/dev/null
-elif command -v xdg-open &>/dev/null; then
-  xdg-open "$URL" 2>/dev/null
-fi
-
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo " Dashboard server running (PID: ${SERVER_PID})"
-echo " Press Enter or type 'stop' to close the server"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-# Wait for user input
-read -r USER_INPUT
-
-# Stop the server
-kill $SERVER_PID 2>/dev/null
-wait $SERVER_PID 2>/dev/null
-
-echo "Dashboard server stopped."
+# Give a brief message and exit - server runs in background
+echo "Dashboard started at http://localhost:${PORT}"
+echo "To stop: pkill -f dashboard-server.py"
 `
