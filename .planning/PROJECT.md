@@ -20,6 +20,9 @@ Help users monitor and understand their Claude Code token consumption and costs 
 - ✓ Cross-platform support (macOS, Linux)
 - ✓ Date/model/project filtering in CLI and Dashboard
 - ✓ Dark mode support in dashboard
+- ✓ **Internationalization (i18n)**: Chinese and English language toggle — Added 2026-04-02
+- ✓ **Cyberpunk Terminal UI aesthetic**: Modern dark theme design — Added 2026-04-02
+- ✓ **Total turns tracking**: Conversation turns in summary cards — Added 2026-04-02
 - ✓ Plugin marketplace registration
 - ✓ GitHub repository accessible (KingsFish/tokenmeter) — Validated in Phase 1
 - ✓ Marketplace installation works (`claude plugin install tokenmeter`) — Validated in Phase 1
@@ -73,9 +76,11 @@ Help users monitor and understand their Claude Code token consumption and costs 
 | Chart.js from CDN | No bundling required, always latest | — Pending - offline support? |
 | JSONL transcript parsing | Direct access to Claude Code data | ✓ Good - real data source |
 | zsh nullglob in commands | Prevents glob errors in zsh shell | ✓ Good - broader shell support |
+| i18n module (zh/en) | Chinese user support, global accessibility | ✓ Good - toggle in header |
+| Cyberpunk Terminal UI | Distinctive modern aesthetic, dark theme | ✓ Good - terminal vibe |
 
 ---
-*Last updated: 2026-04-01 after Phase 1 completion*
+*Last updated: 2026-04-02 after documentation sync*
 
 ## Evolution
 

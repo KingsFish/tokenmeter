@@ -285,8 +285,8 @@ Reference: See `~/.claude/plugins/known_marketplaces.json` for marketplace struc
 - [x] Create custom marketplace (marketplace.json)
 - [x] Update README with one-line installation instructions
 - [x] Update plugin.json with proper metadata for marketplace
-- [ ] Create GitHub repository (KingsFish/tokenmeter)
-- [ ] Test installation on fresh Claude Code setup
+- [x] Create GitHub repository (KingsFish/tokenmeter)
+- [x] Test installation on fresh Claude Code setup
 
 ---
 

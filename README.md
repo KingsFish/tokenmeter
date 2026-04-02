@@ -15,10 +15,14 @@ TokenMeter helps you monitor your Claude Code token consumption and estimate cos
 - Parse all Claude Code session transcripts automatically
 - Token usage tracking by model, project, and session
 - Cost estimation with configurable model prices
+- **Internationalization (i18n)**: Chinese and English language support with toggle
 - Interactive web dashboard with:
+  - **Cyberpunk Terminal aesthetic**: Modern dark theme with terminal-style UI
   - Token usage over time chart
   - Usage breakdown by project and model
   - Session history table with filtering
+  - **Total turns tracking**: Display conversation turns in summary cards
+  - **Server control**: Start/stop dashboard server with PID tracking
   - Settings page for price configuration
 - Warning when using models without price configuration
 - Cross-platform support (macOS, Linux)
@@ -246,6 +250,7 @@ To add a new model:
 - **Total Tokens**: Cumulative token usage across all sessions
 - **Est. Cost**: Estimated cost based on configured prices
 - **Sessions**: Total number of Claude Code sessions
+- **Total Turns**: Total conversation turns across all sessions
 
 ### Charts
 
@@ -275,6 +280,17 @@ Access via the gear icon in the header:
 - Set default price
 - View unconfigured models
 - Reset to defaults
+
+### Language Toggle
+
+Switch between Chinese and English using the language toggle in the header. All dashboard text, charts, and tables will update accordingly.
+
+### Server Control
+
+The dashboard shows server status in the header:
+- **Running indicator**: Shows when server is active
+- **Port display**: Current port number
+- **PID tracking**: Process ID for monitoring
 
 ## Troubleshooting
 
