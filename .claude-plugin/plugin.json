@@ -1,7 +1,7 @@
 {
   "name": "tokenmeter",
   "description": "Measure your Claude Code token usage with CLI stats and Web Dashboard",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "KingsFish"
   },
