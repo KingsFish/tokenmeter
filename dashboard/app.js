@@ -16,6 +16,7 @@ const filterState = {
 };
 
 let availableModels = [];
+let availableProjects = [];
 
 /**
  * Build API URL with current filter state
@@ -82,6 +83,25 @@ function populateModelDropdown() {
         const opt = document.createElement('option');
         opt.value = model;
         opt.textContent = model;
+        select.appendChild(opt);
+    });
+}
+
+/**
+ * Populate project dropdown
+ */
+function populateProjectDropdown() {
+    const select = document.getElementById('filter-project');
+    if (!select) return;
+
+    while (select.options.length > 1) {
+        select.remove(1);
+    }
+
+    availableProjects.forEach(project => {
+        const opt = document.createElement('option');
+        opt.value = project;
+        opt.textContent = project;
         select.appendChild(opt);
     });
 }
@@ -193,16 +213,12 @@ function initFilterListeners() {
         });
     }
 
-    // Project input with debounce
-    const projectInput = document.getElementById('filter-project');
-    if (projectInput) {
-        let debounceTimer;
-        projectInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                filterState.project = projectInput.value.trim();
-                initDashboard();
-            }, 300);
+    // Project select change
+    const projectSelect = document.getElementById('filter-project');
+    if (projectSelect) {
+        projectSelect.addEventListener('change', () => {
+            filterState.project = projectSelect.value;
+            initDashboard();
         });
     }
 
@@ -800,6 +816,11 @@ async function initDashboard() {
         if (data.summary && data.summary.by_model) {
             availableModels = Object.keys(data.summary.by_model);
             populateModelDropdown();
+        }
+
+        if (data.summary && data.summary.by_project) {
+            availableProjects = Object.keys(data.summary.by_project);
+            populateProjectDropdown();
         }
 
         if (!data.sessions || data.sessions.length === 0) {
