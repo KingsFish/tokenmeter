@@ -10,6 +10,7 @@ import os
 import signal
 import subprocess
 import sys
+import threading
 import webbrowser
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -271,10 +272,11 @@ def main():
 
     httpd = run_server(port)
 
-    # Handle graceful shutdown
+    # Handle graceful shutdown (must run in separate thread)
     def signal_handler(sig, frame):
         print("\nShutting down server...")
-        httpd.shutdown()
+        # shutdown() must be called from a different thread than serve_forever()
+        threading.Thread(target=httpd.shutdown, daemon=True).start()
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
